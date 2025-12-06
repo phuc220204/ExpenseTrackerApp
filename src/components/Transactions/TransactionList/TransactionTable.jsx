@@ -63,7 +63,7 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
           classNames={{
-            wrapper: "min-w-full",
+            wrapper: "min-w-full min-h-[222px]",
           }}
           bottomContent={
             totalPages > 1 ? (
@@ -80,9 +80,6 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
               </div>
             ) : null
           }
-          classNames={{
-            wrapper: "min-h-[222px]",
-          }}
         >
           <TableHeader>
             <TableColumn key="date" allowsSorting className="min-w-[100px]">
