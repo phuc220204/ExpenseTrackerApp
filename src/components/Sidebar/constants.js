@@ -1,4 +1,10 @@
-import { LayoutDashboard, PieChart, Database } from "lucide-react";
+import { LayoutDashboard, PieChart, Database, PiggyBank } from "lucide-react";
+
+/**
+ * Tên ứng dụng hiển thị trên Sidebar
+ * @type {string}
+ */
+export const APP_NAME = "ExpenseTracker";
 
 /**
  * Danh sách các menu items cho navigation
@@ -16,15 +22,13 @@ export const MENU_ITEMS = [
     icon: PieChart,
   },
   {
+    path: "/planning",
+    label: "Kế hoạch",
+    icon: PiggyBank,
+  },
+  {
     path: "/data-tools",
     label: "Công cụ Dữ liệu",
     icon: Database,
   },
 ];
-
-/**
- * Tên ứng dụng hiển thị trên Sidebar
- * @type {string}
- */
-export const APP_NAME = "ExpenseTracker";
-

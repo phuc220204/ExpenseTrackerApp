@@ -13,8 +13,8 @@ import {
 } from "@heroui/react";
 import { Edit, Trash2 } from "lucide-react";
 import { formatCurrency } from "../../../utils/formatCurrency";
-import { getIconForCategory } from "./constants";
 import { useTransactionTable, formatTableDate } from "./useTransactionTable";
+import { useCategoryContext } from "../../../contexts/CategoryContext";
 import DeleteConfirmModal from "../../DeleteConfirmModal";
 import TransactionDetailModal from "./TransactionDetailModal";
 import { useState } from "react";
@@ -24,6 +24,7 @@ import { useState } from "react";
  * Sử dụng Hero UI Table với phân trang
  */
 const TransactionTable = ({ transactions, onEdit, onDelete }) => {
+  const { expenseCategories, incomeCategories } = useCategoryContext();
   const {
     page,
     setPage,
@@ -32,6 +33,12 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
     sortDescriptor,
     setSortDescriptor,
   } = useTransactionTable(transactions);
+
+  // Helper lấy category data từ context
+  const getCategoryData = (categoryName, type) => {
+    const categories = type === "income" ? incomeCategories : expenseCategories;
+    return categories.find((cat) => cat.name === categoryName);
+  };
 
   const [deleteModalState, setDeleteModalState] = useState({
     isOpen: false,
@@ -87,12 +94,27 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
             </TableColumn>
             <TableColumn className="hidden sm:table-cell">DANH MỤC</TableColumn>
             <TableColumn className="hidden md:table-cell">GHI CHÚ</TableColumn>
-            <TableColumn key="type" allowsSorting className="hidden sm:table-cell">LOẠI</TableColumn>
-            <TableColumn className="hidden lg:table-cell">PHƯƠNG THỨC</TableColumn>
-            <TableColumn key="amount" align="end" allowsSorting className="min-w-[120px]">
+            <TableColumn
+              key="type"
+              allowsSorting
+              className="hidden sm:table-cell"
+            >
+              LOẠI
+            </TableColumn>
+            <TableColumn className="hidden lg:table-cell">
+              PHƯƠNG THỨC
+            </TableColumn>
+            <TableColumn
+              key="amount"
+              align="end"
+              allowsSorting
+              className="min-w-[120px]"
+            >
               SỐ TIỀN
             </TableColumn>
-            <TableColumn align="center" className="min-w-[80px]">HÀNH ĐỘNG</TableColumn>
+            <TableColumn align="center" className="min-w-[80px]">
+              HÀNH ĐỘNG
+            </TableColumn>
           </TableHeader>
           <TableBody emptyContent="Không có giao dịch nào">
             {paginatedTransactions.map((transaction) => {
@@ -103,8 +125,13 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
               const categoryDisplay = transaction.category?.includes(" > ")
                 ? transaction.category.split(" > ")[1]
                 : transaction.category;
-              
-              const Icon = getIconForCategory(categoryMain, transaction.type);
+
+              // Lấy emoji icon từ CategoryContext
+              const categoryData = getCategoryData(
+                categoryMain,
+                transaction.type
+              );
+              const categoryEmoji = categoryData?.icon || "📦";
               const isIncome = transaction.type === "income";
 
               return (
@@ -113,7 +140,10 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   onClick={(e) => {
                     // Chỉ mở modal nếu click vào row, không phải vào button
-                    if (e.target.closest('button') || e.target.closest('[role="button"]')) {
+                    if (
+                      e.target.closest("button") ||
+                      e.target.closest('[role="button"]')
+                    ) {
                       return;
                     }
                     setDetailModalState({
@@ -129,7 +159,7 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
                       </span>
                       {/* Hiển thị category trên mobile */}
                       <div className="flex items-center gap-1 sm:hidden mt-1">
-                        <Icon className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                        <span className="text-sm">{categoryEmoji}</span>
                         <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
                           {categoryDisplay}
                         </span>
@@ -138,7 +168,7 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      <span className="text-lg">{categoryEmoji}</span>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {categoryDisplay}
@@ -185,7 +215,7 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div 
+                    <div
                       className="flex items-center justify-center gap-2"
                       onClick={(e) => e.stopPropagation()} // Ngăn click event bubble lên TableRow
                     >
@@ -265,4 +295,3 @@ const TransactionTable = ({ transactions, onEdit, onDelete }) => {
 };
 
 export default TransactionTable;
-

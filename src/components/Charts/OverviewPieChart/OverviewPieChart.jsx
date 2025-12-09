@@ -1,5 +1,12 @@
 import { Card, CardBody, Tabs, Tab } from "@heroui/react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { FolderOpen } from "lucide-react";
 import { usePieChartData } from "./usePieChartData";
@@ -16,9 +23,7 @@ const CustomTooltip = ({ active, payload }) => {
           {data.name}
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          <span className="font-semibold">
-            {formatCurrency(data.value)}
-          </span>
+          <span className="font-semibold">{formatCurrency(data.value)}</span>
         </p>
         {data.payload.percentage && (
           <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
@@ -35,7 +40,14 @@ const CustomTooltip = ({ active, payload }) => {
  * Label tùy chỉnh cho các phần của biểu đồ tròn
  * Chỉ hiển thị label nếu phần trăm >= 5%
  */
-const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+const renderCustomLabel = ({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+}) => {
   const RADIAN = Math.PI / 180;
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -153,7 +165,7 @@ const OverviewPieChart = ({ transactions }) => {
               <Legend
                 wrapperStyle={{ paddingTop: "20px" }}
                 iconType="circle"
-                formatter={(value, entry) => (
+                formatter={(value) => (
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {value}
                   </span>
@@ -168,4 +180,3 @@ const OverviewPieChart = ({ transactions }) => {
 };
 
 export default OverviewPieChart;
-

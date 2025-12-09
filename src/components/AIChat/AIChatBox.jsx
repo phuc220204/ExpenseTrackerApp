@@ -11,15 +11,7 @@ import {
   ModalBody,
   Chip,
 } from "@heroui/react";
-import {
-  Bot,
-  Send,
-  X,
-  Trash2,
-  CheckCircle2,
-  XCircle,
-  Key,
-} from "lucide-react";
+import { Bot, Send, X, Trash2, CheckCircle2, XCircle, Key } from "lucide-react";
 import { useAIChat } from "./useAIChat";
 import ApiKeyModal from "./ApiKeyModal";
 import { useGeminiKey } from "../../hooks/useGeminiKey";
@@ -30,7 +22,7 @@ import { formatCurrency } from "../../utils/formatCurrency";
  * Component Chat Box cho AI Assistant
  * Giao diện chat hiện đại với bong bóng tin nhắn
  */
-const AIChatBox = () => {
+const AIChatBox = ({ isOpen, onOpenChange }) => {
   const {
     messages,
     isLoading,
@@ -45,8 +37,12 @@ const AIChatBox = () => {
   } = useAIChat();
 
   const { apiKey, setApiKey } = useGeminiKey();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const { isOpen: isApiKeyModalOpen, onOpen: onOpenApiKeyModal, onOpenChange: onApiKeyModalChange } = useDisclosure();
+  // const { isOpen, onOpen, onOpenChange } = useDisclosure(); // Moved to Layout
+  const {
+    isOpen: isApiKeyModalOpen,
+    onOpen: onOpenApiKeyModal,
+    onOpenChange: onApiKeyModalChange,
+  } = useDisclosure();
   const [inputMessage, setInputMessage] = useState("");
 
   /**
@@ -75,17 +71,7 @@ const AIChatBox = () => {
 
   return (
     <>
-      {/* Floating Action Button - Mở Chat */}
-      <Button
-        isIconOnly
-        color="secondary"
-        size="lg"
-        className="fixed bottom-40 sm:bottom-44 lg:bottom-6 right-4 sm:right-6 lg:right-20 z-40 shadow-lg hover:shadow-xl transition-all rounded-full animate-pulse"
-        onPress={onOpen}
-        aria-label="Mở Trợ lý AI"
-      >
-        <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
-      </Button>
+      {/* Floating Action Button removed - Controlled by external SpeedDial */}
 
       {/* Modal Chat Box */}
       <Modal
@@ -153,10 +139,7 @@ const AIChatBox = () => {
                         <p className="text-gray-600 dark:text-gray-400 mb-4">
                           Vui lòng cấu hình API Key để sử dụng Trợ lý AI
                         </p>
-                        <Button
-                          color="primary"
-                          onPress={onOpenApiKeyModal}
-                        >
+                        <Button color="primary" onPress={onOpenApiKeyModal}>
                           Cấu hình API Key
                         </Button>
                       </div>
@@ -169,8 +152,8 @@ const AIChatBox = () => {
                           Chào bạn! 👋
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Tôi là Trợ lý Tài chính AI của bạn. Hãy hỏi tôi bất cứ điều gì về
-                          tài chính của bạn!
+                          Tôi là Trợ lý Tài chính AI của bạn. Hãy hỏi tôi bất cứ
+                          điều gì về tài chính của bạn!
                         </p>
                         <div className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
                           <p>💡 Ví dụ: "Thêm chi tiêu 50000 cho ăn uống"</p>
@@ -184,7 +167,9 @@ const AIChatBox = () => {
                         <div
                           key={message.id}
                           className={`flex ${
-                            message.role === "user" ? "justify-end" : "justify-start"
+                            message.role === "user"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           <div
@@ -194,7 +179,9 @@ const AIChatBox = () => {
                                 : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700"
                             }`}
                           >
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">
+                              {message.content}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -203,8 +190,14 @@ const AIChatBox = () => {
                           <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-2 border border-gray-200 dark:border-gray-700">
                             <div className="flex gap-1">
                               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
-                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+                              <span
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.2s" }}
+                              ></span>
+                              <span
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.4s" }}
+                              ></span>
                             </div>
                           </div>
                         </div>
@@ -214,66 +207,100 @@ const AIChatBox = () => {
                   )}
 
                   {/* Preview Transaction Card(s) */}
-                  {(previewTransaction || (previewTransactions && previewTransactions.length > 0)) && (
+                  {(previewTransaction ||
+                    (previewTransactions &&
+                      previewTransactions.length > 0)) && (
                     <div className="border-t border-gray-200 dark:border-gray-800 p-3 sm:p-4 bg-white dark:bg-gray-800">
                       <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                        {previewTransactions.length > 0 
+                        {previewTransactions.length > 0
                           ? `Xem trước ${previewTransactions.length} giao dịch`
                           : "Xem trước giao dịch"}
                       </h4>
-                      
-                      <div className={`space-y-3 ${previewTransactions.length > 1 ? 'max-h-[300px] sm:max-h-[400px] lg:max-h-[450px] overflow-y-auto pr-2' : ''}`}>
+
+                      <div
+                        className={`space-y-3 ${
+                          previewTransactions.length > 1
+                            ? "max-h-[300px] sm:max-h-[400px] lg:max-h-[450px] overflow-y-auto pr-2"
+                            : ""
+                        }`}
+                      >
                         {/* Hiển thị nhiều transactions */}
                         {previewTransactions.length > 0 ? (
                           previewTransactions.map((transaction, index) => (
-                            <Card key={index} className="border border-primary-200 dark:border-primary-800">
+                            <Card
+                              key={index}
+                              className="border border-primary-200 dark:border-primary-800"
+                            >
                               <CardBody className="p-3 sm:p-4">
                                 <div className="space-y-1.5 text-xs sm:text-sm">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Giao dịch {index + 1}:</span>
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">
+                                      Giao dịch {index + 1}:
+                                    </span>
                                     <Chip
                                       size="sm"
-                                      color={transaction.type === "income" ? "success" : "danger"}
+                                      color={
+                                        transaction.type === "income"
+                                          ? "success"
+                                          : "danger"
+                                      }
                                       variant="flat"
                                     >
-                                      {transaction.type === "income" ? "Thu" : "Chi"}
+                                      {transaction.type === "income"
+                                        ? "Thu"
+                                        : "Chi"}
                                     </Chip>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Số tiền:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Số tiền:
+                                    </span>
                                     <span className="font-semibold text-gray-900 dark:text-white">
                                       {formatCurrency(transaction.amount)}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Danh mục:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Danh mục:
+                                    </span>
                                     <span className="text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
                                       {transaction.category}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Ngày:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Ngày:
+                                    </span>
                                     <span className="text-gray-900 dark:text-white">
                                       {transaction.date}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Phương thức:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Phương thức:
+                                    </span>
                                     <span className="text-gray-900 dark:text-white">
-                                      {transaction.paymentMethod === "transfer" ? "Chuyển khoản" : "Tiền mặt"}
+                                      {transaction.paymentMethod === "transfer"
+                                        ? "Chuyển khoản"
+                                        : "Tiền mặt"}
                                     </span>
                                   </div>
-                                  {transaction.paymentMethod === "transfer" && transaction.bankName && (
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600 dark:text-gray-400">Ngân hàng/Ví:</span>
-                                      <span className="text-gray-900 dark:text-white font-medium truncate max-w-[120px] sm:max-w-none">
-                                        {transaction.bankName}
-                                      </span>
-                                    </div>
-                                  )}
+                                  {transaction.paymentMethod === "transfer" &&
+                                    transaction.bankName && (
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                          Ngân hàng/Ví:
+                                        </span>
+                                        <span className="text-gray-900 dark:text-white font-medium truncate max-w-[120px] sm:max-w-none">
+                                          {transaction.bankName}
+                                        </span>
+                                      </div>
+                                    )}
                                   {transaction.note && (
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600 dark:text-gray-400">Ghi chú:</span>
+                                      <span className="text-gray-600 dark:text-gray-400">
+                                        Ghi chú:
+                                      </span>
                                       <span className="text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
                                         {transaction.note}
                                       </span>
@@ -289,50 +316,75 @@ const AIChatBox = () => {
                             <CardBody className="p-3 sm:p-4">
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Loại:</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Loại:
+                                  </span>
                                   <Chip
                                     size="sm"
-                                    color={previewTransaction.type === "income" ? "success" : "danger"}
+                                    color={
+                                      previewTransaction.type === "income"
+                                        ? "success"
+                                        : "danger"
+                                    }
                                     variant="flat"
                                   >
-                                    {previewTransaction.type === "income" ? "Thu" : "Chi"}
+                                    {previewTransaction.type === "income"
+                                      ? "Thu"
+                                      : "Chi"}
                                   </Chip>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Số tiền:</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Số tiền:
+                                  </span>
                                   <span className="font-semibold text-gray-900 dark:text-white">
                                     {formatCurrency(previewTransaction.amount)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Danh mục:</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Danh mục:
+                                  </span>
                                   <span className="text-gray-900 dark:text-white">
                                     {previewTransaction.category}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Ngày:</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Ngày:
+                                  </span>
                                   <span className="text-gray-900 dark:text-white">
                                     {previewTransaction.date}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Phương thức:</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Phương thức:
+                                  </span>
                                   <span className="text-gray-900 dark:text-white">
-                                    {previewTransaction.paymentMethod === "transfer" ? "Chuyển khoản" : "Tiền mặt"}
+                                    {previewTransaction.paymentMethod ===
+                                    "transfer"
+                                      ? "Chuyển khoản"
+                                      : "Tiền mặt"}
                                   </span>
                                 </div>
-                                {previewTransaction.paymentMethod === "transfer" && previewTransaction.bankName && (
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Ngân hàng/Ví:</span>
-                                    <span className="text-gray-900 dark:text-white font-medium">
-                                      {previewTransaction.bankName}
-                                    </span>
-                                  </div>
-                                )}
+                                {previewTransaction.paymentMethod ===
+                                  "transfer" &&
+                                  previewTransaction.bankName && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400">
+                                        Ngân hàng/Ví:
+                                      </span>
+                                      <span className="text-gray-900 dark:text-white font-medium">
+                                        {previewTransaction.bankName}
+                                      </span>
+                                    </div>
+                                  )}
                                 {previewTransaction.note && (
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Ghi chú:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Ghi chú:
+                                    </span>
                                     <span className="text-gray-900 dark:text-white">
                                       {previewTransaction.note}
                                     </span>
@@ -343,7 +395,7 @@ const AIChatBox = () => {
                           </Card>
                         ) : null}
                       </div>
-                      
+
                       {/* Action Buttons */}
                       <div className="flex gap-2 mt-4">
                         <Button
@@ -354,7 +406,7 @@ const AIChatBox = () => {
                           isLoading={isLoading}
                           className="flex-1"
                         >
-                          {previewTransactions.length > 0 
+                          {previewTransactions.length > 0
                             ? `Lưu tất cả (${previewTransactions.length})`
                             : "Lưu"}
                         </Button>
@@ -374,7 +426,10 @@ const AIChatBox = () => {
                   {/* Input Area */}
                   {hasKey && (
                     <div className="border-t border-gray-200 dark:border-gray-800 p-3 sm:p-4 bg-white dark:bg-gray-800">
-                      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+                      <form
+                        onSubmit={handleSubmit}
+                        className="flex gap-2 items-end"
+                      >
                         <Textarea
                           value={inputMessage}
                           onValueChange={setInputMessage}
@@ -417,16 +472,17 @@ const AIChatBox = () => {
       </Modal>
 
       {/* ApiKeyModal */}
-      <ApiKeyModal
-        isOpen={isApiKeyModalOpen}
-        onOpenChange={onApiKeyModalChange}
-        onSaveKey={setApiKey}
-        currentApiKey={apiKey}
-        onDeleteKey={() => setApiKey("")}
-      />
+      {isApiKeyModalOpen && (
+        <ApiKeyModal
+          isOpen={isApiKeyModalOpen}
+          onOpenChange={onApiKeyModalChange}
+          onSaveKey={setApiKey}
+          currentApiKey={apiKey}
+          onDeleteKey={() => setApiKey("")}
+        />
+      )}
     </>
   );
 };
 
 export default AIChatBox;
-

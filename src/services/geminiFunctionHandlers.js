@@ -22,7 +22,7 @@ function parseRelativeDate(dateStr) {
 
   // Hôm nay và các cách nói về hôm nay
   if (
-    normalized === "hôm nay" || 
+    normalized === "hôm nay" ||
     normalized === "hom nay" ||
     normalized === "hồi trưa" ||
     normalized === "hoi trua" ||
@@ -39,14 +39,24 @@ function parseRelativeDate(dateStr) {
   }
 
   // Hôm qua (1 ngày trước)
-  if (normalized === "hôm qua" || normalized === "ngày hôm qua" || normalized === "hom qua" || normalized === "ngay hom qua") {
+  if (
+    normalized === "hôm qua" ||
+    normalized === "ngày hôm qua" ||
+    normalized === "hom qua" ||
+    normalized === "ngay hom qua"
+  ) {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     return formatDate(yesterday);
   }
 
   // Ngày hôm kia (2 ngày trước)
-  if (normalized === "ngày hôm kia" || normalized === "hôm kia" || normalized === "ngay hom kia" || normalized === "hom kia") {
+  if (
+    normalized === "ngày hôm kia" ||
+    normalized === "hôm kia" ||
+    normalized === "ngay hom kia" ||
+    normalized === "hom kia"
+  ) {
     const dayBeforeYesterday = new Date(today);
     dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2);
     return formatDate(dayBeforeYesterday);
@@ -66,7 +76,7 @@ function parseRelativeDate(dateStr) {
   if (weeksAgoMatch) {
     const weeks = parseInt(weeksAgoMatch[1], 10);
     const targetDate = new Date(today);
-    targetDate.setDate(targetDate.getDate() - (weeks * 7));
+    targetDate.setDate(targetDate.getDate() - weeks * 7);
     return formatDate(targetDate);
   }
 
@@ -113,14 +123,14 @@ function parseRelativeDate(dateStr) {
       // Bắt đầu từ 7 ngày trước (đầu tuần trước)
       const lastWeekStart = new Date(today);
       lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-      
+
       // Tìm ngày thứ đó trong tuần trước
       const currentDayOfWeek = lastWeekStart.getDay();
       const daysToSubtract = (currentDayOfWeek - targetDayOfWeek + 7) % 7;
-      
+
       const targetDate = new Date(lastWeekStart);
       targetDate.setDate(targetDate.getDate() - daysToSubtract);
-      
+
       return formatDate(targetDate);
     }
   }
@@ -161,7 +171,7 @@ function formatDate(date) {
 
 /**
  * Parse "tháng trước" thành khoảng thời gian (từ ngày 1 đến ngày cuối của tháng trước)
- * 
+ *
  * @param {string} dateStr - Chuỗi ngày (ví dụ: "tháng trước", "thang truoc")
  * @returns {Object|null} Object chứa {startDate, endDate} hoặc null nếu không phải "tháng trước"
  */
@@ -175,16 +185,31 @@ function parseMonthRange(dateStr) {
   today.setHours(0, 0, 0, 0);
 
   // Tháng trước (từ ngày 1 đến ngày cuối của tháng trước)
-  if (normalized === "tháng trước" || normalized === "thang truoc") {
+  if (
+    normalized === "tháng trước" ||
+    normalized === "thang truoc" ||
+    normalized === "tháng vừa rồi" ||
+    normalized === "thang vua roi" ||
+    normalized === "tháng rồi" ||
+    normalized === "thang roi"
+  ) {
     const lastMonth = new Date(today);
     lastMonth.setMonth(lastMonth.getMonth() - 1);
-    
+
     // Ngày đầu tháng trước (ngày 1)
-    const startDate = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
-    
+    const startDate = new Date(
+      lastMonth.getFullYear(),
+      lastMonth.getMonth(),
+      1
+    );
+
     // Ngày cuối tháng trước
-    const endDate = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
-    
+    const endDate = new Date(
+      lastMonth.getFullYear(),
+      lastMonth.getMonth() + 1,
+      0
+    );
+
     return {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
@@ -194,13 +219,17 @@ function parseMonthRange(dateStr) {
   // Tháng này (từ ngày 1 đến hôm nay)
   if (normalized === "tháng này" || normalized === "thang nay") {
     const thisMonth = new Date(today);
-    
+
     // Ngày đầu tháng này (ngày 1)
-    const startDate = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
-    
+    const startDate = new Date(
+      thisMonth.getFullYear(),
+      thisMonth.getMonth(),
+      1
+    );
+
     // Ngày cuối là hôm nay
     const endDate = new Date(today);
-    
+
     return {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
@@ -218,12 +247,12 @@ function parseMonthRange(dateStr) {
  * - YYYY-MM-DD (giữ nguyên)
  * - DD-MM-YY, DD-MM-YYYY (dấu gạch ngang)
  *
- * @param {string} dateStr - Chuỗi ngày cần parse
- * @returns {string} Ngày đã được format thành YYYY-MM-DD
+ * @param {boolean} strict - Nếu true, trả về null nếu không parse được. Nếu false, trả về ngày hôm nay.
+ * @returns {string|null} Ngày đã được format thành YYYY-MM-DD
  */
-function parseVietnameseDate(dateStr) {
+function parseVietnameseDate(dateStr, strict = false) {
   if (!dateStr || typeof dateStr !== "string") {
-    return dateStr;
+    return strict ? null : dateStr;
   }
 
   // Nếu đã là format YYYY-MM-DD, kiểm tra và trả về
@@ -234,7 +263,7 @@ function parseVietnameseDate(dateStr) {
 
   // Parse format DD/MM/YY hoặc DD/MM/YYYY
   // Hỗ trợ cả dấu / và dấu -
-  const pattern = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
+  const pattern = /^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/;
 
   const match = dateStr.trim().match(pattern);
   if (match) {
@@ -249,6 +278,7 @@ function parseVietnameseDate(dateStr) {
 
     // Validate ngày, tháng
     if (month < 1 || month > 12) {
+      if (strict) return null;
       const today = new Date();
       year = today.getFullYear();
       month = today.getMonth() + 1;
@@ -256,6 +286,7 @@ function parseVietnameseDate(dateStr) {
     }
 
     if (day < 1 || day > 31) {
+      if (strict) return null;
       const today = new Date();
       year = today.getFullYear();
       month = today.getMonth() + 1;
@@ -270,7 +301,10 @@ function parseVietnameseDate(dateStr) {
     return `${formattedYear}-${formattedMonth}-${formattedDay}`;
   }
 
-  // Nếu không parse được, trả về ngày hôm nay
+  // Nếu không parse được
+  if (strict) return null;
+
+  // Trả về ngày hôm nay (fallback)
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, "0");
@@ -286,7 +320,7 @@ function parseVietnameseDate(dateStr) {
  * @param {Function} addTransaction - Function từ TransactionsContext (không dùng ở đây, chỉ để preview)
  * @returns {Promise<Object>} Kết quả với transaction data để preview
  */
-export const handleAddTransaction = async (params, addTransaction) => {
+export const handleAddTransaction = async (params) => {
   try {
     const {
       amount,
@@ -308,7 +342,7 @@ export const handleAddTransaction = async (params, addTransaction) => {
 
     // Parse và normalize ngày từ format Việt Nam hoặc các format khác
     let transactionDate = date;
-    
+
     if (!transactionDate) {
       // Tự động dùng ngày hôm nay nếu không có ngày
       const today = new Date();
@@ -328,7 +362,7 @@ export const handleAddTransaction = async (params, addTransaction) => {
         transactionDate = parseVietnameseDate(transactionDate);
       }
     }
-    
+
     // Log để debug
     // Date parsing completed
 
@@ -387,7 +421,7 @@ export const handleGetTransactionsByDateRange = async (params, userId) => {
     // Parse "tháng trước" hoặc "tháng này" nếu có
     const startMonthRange = parseMonthRange(startDate);
     const endMonthRange = parseMonthRange(endDate);
-    
+
     if (startMonthRange) {
       // Nếu startDate là "tháng trước" hoặc "tháng này", dùng khoảng thời gian từ monthRange
       startDate = startMonthRange.startDate;
@@ -398,9 +432,20 @@ export const handleGetTransactionsByDateRange = async (params, userId) => {
       endDate = endMonthRange.endDate;
     } else {
       // Parse ngày tương đối hoặc format Việt Nam cho startDate và endDate
-      const parsedStartDate = parseRelativeDate(startDate) || parseVietnameseDate(startDate);
-      const parsedEndDate = parseRelativeDate(endDate) || parseVietnameseDate(endDate);
-      
+      const parsedStartDate =
+        parseRelativeDate(startDate) || parseVietnameseDate(startDate, true);
+      const parsedEndDate =
+        parseRelativeDate(endDate) || parseVietnameseDate(endDate, true);
+
+      // Nếu không parse được ngày, trả về lỗi thay vì fallback sang hôm nay
+      if (!parsedStartDate && !startMonthRange && !endMonthRange) {
+        return {
+          success: false,
+          error: `Không thể hiểu định dạng ngày: "${startDate}". Vui lòng sử dụng DD/MM/YYYY hoặc các từ như "hôm nay", "hôm qua", "tháng trước".`,
+          transactions: [],
+        };
+      }
+
       if (parsedStartDate) startDate = parsedStartDate;
       if (parsedEndDate) endDate = parsedEndDate;
     }
@@ -600,6 +645,48 @@ export const handleGetBalance = async (params, allTransactions) => {
       success: false,
       error: error.message || "Có lỗi xảy ra khi tính số dư",
       balance: 0,
+    };
+  }
+};
+
+/**
+ * Handler cho hàm deleteTransaction
+ * Xóa một giao dịch khỏi Firestore
+ *
+ * @param {Object} params - Parameters từ AI (transactionId)
+ * @param {Function} deleteTransaction - Function từ TransactionsContext
+ * @returns {Promise<Object>} Kết quả xóa
+ */
+export const handleDeleteTransaction = async (params, deleteTransaction) => {
+  try {
+    const { transactionId } = params;
+
+    if (!transactionId) {
+      return {
+        success: false,
+        error: "Thiếu thông tin: transactionId",
+      };
+    }
+
+    if (!deleteTransaction) {
+      return {
+        success: false,
+        error: "Hàm deleteTransaction không khả dụng",
+      };
+    }
+
+    await deleteTransaction(transactionId);
+
+    return {
+      success: true,
+      message: `Đã xóa giao dịch thành công.`,
+      transactionId,
+    };
+  } catch (error) {
+    console.error("Lỗi khi xóa giao dịch:", error);
+    return {
+      success: false,
+      error: error.message || "Có lỗi xảy ra khi xóa giao dịch",
     };
   }
 };

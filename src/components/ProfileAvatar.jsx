@@ -1,20 +1,27 @@
 import { useState } from "react";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Shield, FileText } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
+import {
+  Avatar,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+} from "@heroui/react";
+import { Link } from "react-router-dom";
 
 /**
  * Component ProfileAvatar - Hiển thị avatar người dùng với dropdown menu
- * Chứa thông tin account và nút đăng xuất
- * @param {Function} onLogoutClick - Callback khi click đăng xuất
- * @param {boolean} isMobile - Nếu true, hiển thị dạng compact cho mobile
+ * Chứa thông tin account, links chính sách, và nút đăng xuất
  */
 const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
   const { currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   // Lấy tên hiển thị từ user (email hoặc displayName)
-  const displayName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "User";
+  const displayName =
+    currentUser?.displayName || currentUser?.email?.split("@")[0] || "User";
   const email = currentUser?.email || "";
   const photoURL = currentUser?.photoURL || null;
 
@@ -86,29 +93,52 @@ const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
           }
         }}
       >
-        <DropdownItem
-          key="profile"
-          startContent={<User className="w-4 h-4" />}
-          textValue="Thông tin tài khoản"
-        >
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{displayName}</span>
-            <span className="text-xs text-gray-500">{email}</span>
-          </div>
-        </DropdownItem>
-        <DropdownItem
-          key="logout"
-          startContent={<LogOut className="w-4 h-4" />}
-          className="text-danger"
-          color="danger"
-          textValue="Đăng xuất"
-        >
-          Đăng xuất
-        </DropdownItem>
+        <DropdownSection title="Tài khoản" showDivider>
+          <DropdownItem
+            key="profile"
+            startContent={<User className="w-4 h-4" />}
+            textValue="Thông tin tài khoản"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{displayName}</span>
+              <span className="text-xs text-gray-500">{email}</span>
+            </div>
+          </DropdownItem>
+        </DropdownSection>
+        <DropdownSection title="Pháp lý" showDivider>
+          <DropdownItem
+            key="privacy"
+            as={Link}
+            to="/privacy-policy"
+            startContent={<Shield className="w-4 h-4" />}
+            textValue="Chính sách bảo mật"
+          >
+            Chính sách bảo mật
+          </DropdownItem>
+          <DropdownItem
+            key="terms"
+            as={Link}
+            to="/terms-of-service"
+            startContent={<FileText className="w-4 h-4" />}
+            textValue="Điều khoản dịch vụ"
+          >
+            Điều khoản dịch vụ
+          </DropdownItem>
+        </DropdownSection>
+        <DropdownSection>
+          <DropdownItem
+            key="logout"
+            startContent={<LogOut className="w-4 h-4" />}
+            className="text-danger"
+            color="danger"
+            textValue="Đăng xuất"
+          >
+            Đăng xuất
+          </DropdownItem>
+        </DropdownSection>
       </DropdownMenu>
     </Dropdown>
   );
 };
 
 export default ProfileAvatar;
-

@@ -30,8 +30,9 @@ const app = initializeApp(firebaseConfig);
 // Export các dịch vụ Firebase để sử dụng trong ứng dụng
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-// Thêm scope để truy cập Google Sheets API
-googleProvider.addScope("https://www.googleapis.com/auth/spreadsheets");
+// Scope drive.file: chỉ truy cập file do app tạo ra (ít sensitive hơn, dễ được Google verify)
+// Thay vì spreadsheets (truy cập TẤT CẢ Google Sheets của user)
+googleProvider.addScope("https://www.googleapis.com/auth/drive.file");
 export const db = getFirestore(app);
 
 export default app;

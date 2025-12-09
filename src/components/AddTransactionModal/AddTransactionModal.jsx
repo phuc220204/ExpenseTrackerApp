@@ -30,9 +30,7 @@ const AddTransactionModal = ({
   const {
     formData,
     setFormData,
-    customCategory,
     setCustomCategory,
-    customBankName,
     setCustomBankName,
     errors,
     setErrors,
@@ -49,7 +47,6 @@ const AddTransactionModal = ({
     editingTransaction,
     isOpen,
   });
-
 
   return (
     <Modal
@@ -219,4 +216,3 @@ const AddTransactionModal = ({
 };
 
 export default AddTransactionModal;
-

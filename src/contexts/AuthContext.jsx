@@ -12,6 +12,9 @@ import { auth } from "../services/firebase";
 
 const AuthContext = createContext(null);
 
+// Thời gian tối đa của một phiên đăng nhập (3 tiếng)
+const SESSION_TIMEOUT_MS = 3 * 60 * 60 * 1000;
+
 /**
  * Provider component để quản lý authentication state cho toàn bộ ứng dụng
  * Sử dụng onAuthStateChanged để lắng nghe thay đổi trạng thái đăng nhập
@@ -26,8 +29,24 @@ export const AuthProvider = ({ children }) => {
    */
   useEffect(() => {
     // Lắng nghe thay đổi trạng thái đăng nhập
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Kiểm tra thời gian hết hạn session (3 tiếng)
+        const lastSignInTime = new Date(user.metadata.lastSignInTime).getTime();
+        const currentTime = Date.now();
+
+        if (currentTime - lastSignInTime > SESSION_TIMEOUT_MS) {
+          console.log(
+            "Phiên đăng nhập hết hạn (quá 3 tiếng). Đang đăng xuất..."
+          );
+          await signOut(auth);
+          setCurrentUser(null);
+        } else {
+          setCurrentUser(user);
+        }
+      } else {
+        setCurrentUser(null);
+      }
       setLoading(false); // Đã hoàn tất kiểm tra auth state
     });
 
@@ -66,6 +85,7 @@ export const AuthProvider = ({ children }) => {
  * @returns {AuthContextType} Object chứa currentUser và loading state
  * @throws {Error} Nếu hook được gọi bên ngoài AuthProvider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

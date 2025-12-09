@@ -1,6 +1,11 @@
 import { useState, useMemo } from "react";
 import { parse, format, isValid } from "date-fns";
-import { writeBatch, collection, doc, serverTimestamp } from "firebase/firestore";
+import {
+  writeBatch,
+  collection,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -44,7 +49,7 @@ export const useBulkImport = () => {
         if (isValid(parsed)) {
           return format(parsed, "yyyy-MM-dd");
         }
-      } catch (e) {
+      } catch {
         // Tiếp tục thử định dạng khác
       }
     }
@@ -55,7 +60,7 @@ export const useBulkImport = () => {
       if (isValid(date)) {
         return format(date, "yyyy-MM-dd");
       }
-    } catch (e) {
+    } catch {
       // Không parse được
     }
 
@@ -295,4 +300,3 @@ export const useBulkImport = () => {
     handleSaveAll,
   };
 };
-

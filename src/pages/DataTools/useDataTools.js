@@ -26,7 +26,8 @@ import {
   SAMPLE_EXCEL_FILENAME,
   EXPORT_EXCEL_FILENAME,
 } from "./constants";
-import { formatAmountInput, parseAmountInput } from "../../utils/formatCurrency";
+import { parseAmountInput } from "../../utils/formatCurrency";
+import { exportToPDF } from "../../utils/exportUtils";
 
 /**
  * Hook xử lý logic cho DataTools
@@ -204,7 +205,7 @@ export const useDataTools = () => {
           const updated = { ...item, ...updates };
           // Re-validate sau khi cập nhật - chỉ validate các field được update
           const errors = [];
-          
+
           // Chỉ validate date nếu date được update
           if (updates.date !== undefined) {
             if (!parseDate(updated.date)) {
@@ -218,7 +219,7 @@ export const useDataTools = () => {
               }
             }
           }
-          
+
           // Parse amount - có thể là string đã format hoặc number
           if (updates.amount !== undefined) {
             if (typeof updates.amount === "string") {
@@ -237,7 +238,11 @@ export const useDataTools = () => {
               }
             } else {
               // Trường hợp khác (null, undefined, empty string)
-              if (updates.amount === "" || updates.amount === null || updates.amount === undefined) {
+              if (
+                updates.amount === "" ||
+                updates.amount === null ||
+                updates.amount === undefined
+              ) {
                 updated.amount = "";
                 errors.push("Số tiền không hợp lệ");
               }
@@ -260,7 +265,11 @@ export const useDataTools = () => {
           } else {
             // Nếu type không được update, giữ nguyên validation cũ
             if (item.errors && item.errors.some((e) => e.includes("Loại"))) {
-              if (updated.type && updated.type !== "income" && updated.type !== "expense") {
+              if (
+                updated.type &&
+                updated.type !== "income" &&
+                updated.type !== "expense"
+              ) {
                 errors.push("Loại phải là 'Thu' hoặc 'Chi'");
               }
             }
@@ -271,7 +280,7 @@ export const useDataTools = () => {
               updated.category = "Khác";
             }
           }
-          
+
           // Nếu chỉ update note, giữ nguyên errors cũ (trừ khi có lỗi mới)
           if (Object.keys(updates).length === 1 && updates.note !== undefined) {
             updated.errors = item.errors || [];
@@ -327,15 +336,15 @@ export const useDataTools = () => {
       prev.map((item) => {
         if (item.id === id) {
           const updated = { ...item, ...updates };
-          
+
           // Nếu chỉ update note, không cần re-validate
           if (Object.keys(updates).length === 1 && updates.note !== undefined) {
             return updated; // Giữ nguyên errors và isValid
           }
-          
+
           // Re-validate sau khi cập nhật - chỉ validate các field được update
           const errors = [];
-          
+
           // Chỉ validate date nếu date được update
           if (updates.date !== undefined) {
             if (!parseDate(updated.date)) {
@@ -349,7 +358,7 @@ export const useDataTools = () => {
               }
             }
           }
-          
+
           // Parse amount - chỉ validate nếu amount được update
           let cleanedAmount = null;
           if (updates.amount !== undefined) {
@@ -372,21 +381,29 @@ export const useDataTools = () => {
               cleanedAmount = amountStr.replace(/[^\d]/g, "");
             }
           }
-          
+
           // Validate type - chỉ validate nếu type được update
           if (updates.type !== undefined) {
-            if (updated.type && updated.type !== "income" && updated.type !== "expense") {
+            if (
+              updated.type &&
+              updated.type !== "income" &&
+              updated.type !== "expense"
+            ) {
               errors.push("Loại phải là 'Thu' hoặc 'Chi'");
             }
           } else {
             // Nếu type không được update, giữ nguyên validation cũ
             if (item.errors && item.errors.some((e) => e.includes("Loại"))) {
-              if (updated.type && updated.type !== "income" && updated.type !== "expense") {
+              if (
+                updated.type &&
+                updated.type !== "income" &&
+                updated.type !== "expense"
+              ) {
                 errors.push("Loại phải là 'Thu' hoặc 'Chi'");
               }
             }
           }
-          
+
           updated.errors = errors;
           updated.isValid = errors.length === 0;
           // Lưu amount dạng số (đã parse) để dễ xử lý - chỉ khi có giá trị hợp lệ
@@ -586,6 +603,32 @@ export const useDataTools = () => {
   };
 
   /**
+   * Xuất dữ liệu ra PDF
+   */
+  const handleExportPDF = async () => {
+    if (transactions.length === 0) {
+      alert("Không có dữ liệu để xuất");
+      return;
+    }
+    setIsExporting(true);
+    try {
+      await exportToPDF(transactions);
+      setExportResult({
+        success: true,
+        message: `Đã xuất ${transactions.length} giao dịch ra PDF`,
+      });
+    } catch (error) {
+      console.error("Lỗi khi xuất PDF:", error);
+      setExportResult({
+        success: false,
+        error: `Có lỗi: ${error.message || "Không xác định"}`,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  /**
    * Xuất dữ liệu ra Google Sheets
    * Yêu cầu user đăng nhập lại để lấy access token với scope mới
    */
@@ -619,7 +662,12 @@ export const useDataTools = () => {
       const { spreadsheetId, sheetId } = spreadsheetInfo;
 
       // Bước 3: Xuất dữ liệu vào sheet
-      await exportDataToSheet(accessToken, spreadsheetId, transactions, sheetId);
+      await exportDataToSheet(
+        accessToken,
+        spreadsheetId,
+        transactions,
+        sheetId
+      );
 
       // Bước 4: Lưu kết quả với link để mở sheet
       setSheetsExportResult({
@@ -630,20 +678,22 @@ export const useDataTools = () => {
       });
     } catch (error) {
       console.error("Lỗi khi xuất Google Sheets:", error);
-      
+
       // Xử lý các loại lỗi khác nhau
       let errorMessage = "Có lỗi xảy ra khi xuất dữ liệu";
-      
+
       if (error.code === "auth/popup-closed-by-user") {
-        errorMessage = "Bạn đã đóng cửa sổ đăng nhập. Vui lòng thử lại và hoàn tất quá trình đăng nhập. Lưu ý: Nếu thấy trang cảnh báo của Google, hãy nhấp 'Nâng cao' và 'Tiếp tục' để cho phép ứng dụng.";
+        errorMessage =
+          "Bạn đã đóng cửa sổ đăng nhập. Vui lòng thử lại và hoàn tất quá trình đăng nhập. Lưu ý: Nếu thấy trang cảnh báo của Google, hãy nhấp 'Nâng cao' và 'Tiếp tục' để cho phép ứng dụng.";
       } else if (error.code === "auth/popup-blocked") {
-        errorMessage = "Cửa sổ đăng nhập bị chặn bởi trình duyệt. Vui lòng cho phép popup và thử lại.";
+        errorMessage =
+          "Cửa sổ đăng nhập bị chặn bởi trình duyệt. Vui lòng cho phép popup và thử lại.";
       } else if (error.code === "auth/cancelled-popup-request") {
         errorMessage = "Yêu cầu đăng nhập đã bị hủy. Vui lòng thử lại.";
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       setSheetsExportResult({
         success: false,
         error: errorMessage,
@@ -751,5 +801,6 @@ export const useDataTools = () => {
     handleExportToExcel,
     handleCopyToClipboard,
     handleExportToGoogleSheets,
+    handleExportPDF,
   };
 };

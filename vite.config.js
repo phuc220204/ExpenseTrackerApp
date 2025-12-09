@@ -11,4 +11,24 @@ export default defineConfig({
       "Cross-Origin-Embedder-Policy": "unsafe-none",
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "firebase-vendor": [
+            "firebase/app",
+            "firebase/auth",
+            "firebase/firestore",
+          ],
+          "ui-vendor": ["@heroui/react", "framer-motion", "lucide-react"],
+          "chart-vendor": ["recharts"],
+          "utils-vendor": ["date-fns", "xlsx", "file-saver"],
+          "ai-vendor": ["@google/generative-ai", "@google/genai"],
+        },
+      },
+    },
+    // Tăng warning limit lên nếu cần thiết
+    chunkSizeWarningLimit: 1000,
+  },
 });

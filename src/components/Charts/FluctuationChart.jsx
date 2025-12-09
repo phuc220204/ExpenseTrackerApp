@@ -1,0 +1,184 @@
+import { useMemo, useCallback } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  subMonths,
+} from "date-fns";
+import { vi } from "date-fns/locale";
+
+// Format tiền VND
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    notation: "compact",
+  }).format(value);
+
+/**
+ * Custom Tooltip Component - Định nghĩa bên ngoài để tránh re-render
+ */
+const CustomTooltipContent = ({ active, payload, label, viewMode }) => {
+  if (active && payload && payload.length) {
+    const income = payload.find((p) => p.dataKey === "Thu nhập")?.value || 0;
+    const expense = payload.find((p) => p.dataKey === "Chi tiêu")?.value || 0;
+    const balance = income - expense;
+
+    return (
+      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
+        <p className="font-semibold text-slate-700 dark:text-white mb-2">
+          {viewMode === "daily" ? `Ngày ${label}` : label}
+        </p>
+        <div className="space-y-1 text-sm">
+          <p className="text-green-600">Thu nhập: {formatCurrency(income)}</p>
+          <p className="text-red-500">Chi tiêu: {formatCurrency(expense)}</p>
+          <hr className="border-slate-200 dark:border-slate-600 my-1" />
+          <p
+            className={`font-semibold ${
+              balance >= 0 ? "text-blue-600" : "text-orange-500"
+            }`}
+          >
+            Còn lại: {formatCurrency(balance)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+/**
+ * Biểu đồ Biến động Thu Chi
+ * Hiển thị so sánh thu nhập vs chi tiêu theo từng ngày/tháng
+ * @param {Array} transactions - Mảng giao dịch
+ * @param {string} viewMode - 'daily' hoặc 'monthly'
+ */
+const FluctuationChart = ({ transactions, viewMode = "daily" }) => {
+  // Xử lý dữ liệu theo ngày trong tháng hiện tại
+  const dailyData = useMemo(() => {
+    const now = new Date();
+    const start = startOfMonth(now);
+    const end = endOfMonth(now);
+    const days = eachDayOfInterval({ start, end });
+
+    return days.map((day) => {
+      const dayStr = format(day, "yyyy-MM-dd");
+      const dayTransactions = transactions.filter((tx) => tx.date === dayStr);
+
+      const income = dayTransactions
+        .filter((tx) => tx.type === "income")
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+      const expense = dayTransactions
+        .filter((tx) => tx.type === "expense")
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+      return {
+        date: format(day, "dd", { locale: vi }),
+        fullDate: dayStr,
+        "Thu nhập": income,
+        "Chi tiêu": expense,
+        balance: income - expense,
+      };
+    });
+  }, [transactions]);
+
+  // Xử lý dữ liệu theo tháng (6 tháng gần nhất)
+  const monthlyData = useMemo(() => {
+    const now = new Date();
+    const months = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = subMonths(now, i);
+      const monthKey = format(monthDate, "yyyy-MM");
+
+      const monthTransactions = transactions.filter((tx) =>
+        tx.date?.startsWith(monthKey)
+      );
+
+      const income = monthTransactions
+        .filter((tx) => tx.type === "income")
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+      const expense = monthTransactions
+        .filter((tx) => tx.type === "expense")
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+      months.push({
+        date: format(monthDate, "T.MM", { locale: vi }),
+        fullDate: monthKey,
+        "Thu nhập": income,
+        "Chi tiêu": expense,
+        balance: income - expense,
+      });
+    }
+
+    return months;
+  }, [transactions]);
+
+  const data = viewMode === "daily" ? dailyData : monthlyData;
+
+  // Wrapper để truyền viewMode vào CustomTooltip
+  const renderTooltip = useCallback(
+    (props) => <CustomTooltipContent {...props} viewMode={viewMode} />,
+    [viewMode]
+  );
+
+  return (
+    <div className="w-full h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 12, fill: "#64748b" }}
+            axisLine={{ stroke: "#cbd5e1" }}
+          />
+          <YAxis
+            tickFormatter={(value) => formatCurrency(value)}
+            tick={{ fontSize: 11, fill: "#64748b" }}
+            axisLine={{ stroke: "#cbd5e1" }}
+            width={70}
+          />
+          <Tooltip content={renderTooltip} />
+          <Legend
+            wrapperStyle={{ paddingTop: 10 }}
+            formatter={(value) => (
+              <span className="text-slate-600 dark:text-slate-300">
+                {value}
+              </span>
+            )}
+          />
+          <Bar
+            dataKey="Thu nhập"
+            fill="#22c55e"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={40}
+          />
+          <Bar
+            dataKey="Chi tiêu"
+            fill="#ef4444"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={40}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export default FluctuationChart;

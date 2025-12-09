@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
-import {
-  Select,
-  SelectItem,
-  Input,
-  Chip,
-} from "@heroui/react";
+import { Select, SelectItem, Input, Chip } from "@heroui/react";
 import { X } from "lucide-react";
-import { BANK_LIST, getBankById, getBanksByType, BANK_TYPE } from "./bankStructure";
+import {
+  BANK_LIST,
+  getBankById,
+  getBanksByType,
+  BANK_TYPE,
+} from "./bankStructure";
 
 /**
  * Component chọn Ngân hàng/Ví điện tử với logo và màu sắc
@@ -19,36 +18,18 @@ const BankSelector = ({
   showCustomName = false,
   customName,
   onCustomNameChange,
-  themeColor,
   onThemeColorChange,
 }) => {
-  const [selectedBankId, setSelectedBankId] = useState("");
-  const [customBankName, setCustomBankName] = useState("");
+  // Derived state from value prop
+  const bankInfo = BANK_LIST.find(
+    (b) => b.name === value || b.shortName === value
+  );
 
-  // Parse value khi component mount hoặc value thay đổi từ bên ngoài
-  useEffect(() => {
-    if (value) {
-      const bank = BANK_LIST.find(
-        (b) => b.name === value || b.shortName === value
-      );
-      if (bank) {
-        setSelectedBankId(bank.id);
-        setCustomBankName("");
-      } else {
-        setSelectedBankId("other");
-        setCustomBankName(value);
-      }
-    } else {
-      setSelectedBankId("");
-      setCustomBankName("");
-    }
-  }, [value]);
+  const selectedBankId = bankInfo ? bankInfo.id : value ? "other" : "";
+  const customBankName = bankInfo ? "" : value;
 
   // Xử lý khi chọn ngân hàng
   const handleBankChange = (bankId) => {
-    setSelectedBankId(bankId);
-    setCustomBankName("");
-
     if (bankId === "other") {
       // User chọn "Khác", hiển thị input tùy chỉnh
       onChange("");
@@ -66,11 +47,10 @@ const BankSelector = ({
 
   // Xử lý khi nhập tên ngân hàng tùy chỉnh
   const handleCustomBankChange = (customValue) => {
-    setCustomBankName(customValue);
     onChange(customValue);
   };
 
-  const selectedBank = selectedBankId ? getBankById(selectedBankId) : null;
+  const selectedBank = bankInfo;
 
   // Nhóm ngân hàng theo loại
   const traditionalBanks = getBanksByType(BANK_TYPE.TRADITIONAL);
@@ -138,10 +118,7 @@ const BankSelector = ({
               key={bank.id}
               value={bank.id}
               startContent={
-                <Icon
-                  className="w-4 h-4"
-                  style={{ color: bank.color }}
-                />
+                <Icon className="w-4 h-4" style={{ color: bank.color }} />
               }
               textValue={bank.name}
             >
@@ -172,10 +149,7 @@ const BankSelector = ({
               key={bank.id}
               value={bank.id}
               startContent={
-                <Icon
-                  className="w-4 h-4"
-                  style={{ color: bank.color }}
-                />
+                <Icon className="w-4 h-4" style={{ color: bank.color }} />
               }
               textValue={bank.name}
             >
@@ -206,10 +180,7 @@ const BankSelector = ({
               key={bank.id}
               value={bank.id}
               startContent={
-                <Icon
-                  className="w-4 h-4"
-                  style={{ color: bank.color }}
-                />
+                <Icon className="w-4 h-4" style={{ color: bank.color }} />
               }
               textValue={bank.name}
             >
@@ -275,7 +246,6 @@ const BankSelector = ({
               <button
                 type="button"
                 onClick={() => {
-                  setCustomBankName("");
                   onChange("");
                 }}
                 className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -295,4 +265,3 @@ const BankSelector = ({
 };
 
 export default BankSelector;
-

@@ -9,7 +9,15 @@ import { useDisclosure } from "@heroui/react";
 
 const Layout = () => {
   const { addTransaction, updateTransaction } = useTransactionsContext();
+  // Modal Thêm giao dịch
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  // Modal Chat AI
+  const {
+    isOpen: isChatOpen,
+    onOpen: onChatOpen,
+    onOpenChange: onChatOpenChange,
+  } = useDisclosure();
+
   const [editingTransaction, setEditingTransaction] = useState(null);
 
   const handleOpenModal = (transaction = null) => {
@@ -33,22 +41,25 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 pb-20 lg:pb-0 overflow-y-auto">
+      <main className="flex-1 lg:ml-64 pb-20 pt-16 lg:pt-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           <Outlet context={{ onEditTransaction: handleOpenModal }} />
         </div>
       </main>
 
-      {/* Floating Action Button - Add Transaction */}
-      <FloatingActionButton onClick={() => handleOpenModal(null)} />
+      {/* Speed Dial Floating Action Button */}
+      <FloatingActionButton
+        onOpenAddTransaction={() => handleOpenModal(null)}
+        onOpenChat={onChatOpen}
+      />
 
       {/* AI Chat Box */}
-      <AIChatBox />
+      <AIChatBox isOpen={isChatOpen} onOpenChange={onChatOpenChange} />
 
       {/* Modal thêm/sửa giao dịch */}
       <AddTransactionModal

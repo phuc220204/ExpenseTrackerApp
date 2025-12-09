@@ -1,16 +1,35 @@
-import { Button, Tabs, Tab } from "@heroui/react";
+import { Tabs, Tab } from "@heroui/react";
 import { List, Table as TableIcon } from "lucide-react";
 import TransactionListView from "./TransactionListView";
 import TransactionTable from "./TransactionTable";
+import TransactionFilterBar from "./TransactionFilterBar";
 import { useViewMode } from "./useViewMode";
+import { useTransactionFilter } from "./useTransactionFilter";
 
 /**
  * Component container chính hiển thị danh sách giao dịch
  * Hỗ trợ 2 chế độ xem: List (gom nhóm theo ngày) và Table (dạng bảng)
  * Responsive: Mobile mặc định List, Desktop mặc định Table
+ * Có tính năng Search & Filter
  */
 const TransactionList = ({ transactions, onEdit, onDelete }) => {
   const { viewMode, setViewMode, showToggle } = useViewMode();
+
+  // Hook xử lý filter
+  const {
+    searchQuery,
+    setSearchQuery,
+    typeFilter,
+    setTypeFilter,
+    categoryFilter,
+    setCategoryFilter,
+    filteredTransactions,
+    availableCategories,
+    hasActiveFilters,
+    clearFilters,
+    resultCount,
+    totalCount,
+  } = useTransactionFilter(transactions);
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -51,16 +70,31 @@ const TransactionList = ({ transactions, onEdit, onDelete }) => {
         )}
       </div>
 
+      {/* Filter Bar */}
+      <TransactionFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        typeFilter={typeFilter}
+        onTypeChange={setTypeFilter}
+        categoryFilter={categoryFilter}
+        onCategoryChange={setCategoryFilter}
+        availableCategories={availableCategories}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearFilters}
+        resultCount={resultCount}
+        totalCount={totalCount}
+      />
+
       {/* Hiển thị theo view mode đã chọn */}
       {viewMode === "list" ? (
         <TransactionListView
-          transactions={transactions}
+          transactions={filteredTransactions}
           onEdit={onEdit}
           onDelete={onDelete}
         />
       ) : (
         <TransactionTable
-          transactions={transactions}
+          transactions={filteredTransactions}
           onEdit={onEdit}
           onDelete={onDelete}
         />
@@ -70,4 +104,3 @@ const TransactionList = ({ transactions, onEdit, onDelete }) => {
 };
 
 export default TransactionList;
-

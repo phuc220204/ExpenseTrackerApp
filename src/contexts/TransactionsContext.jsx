@@ -20,6 +20,7 @@ export const TransactionsProvider = ({ children }) => {
  * Hook để sử dụng transactions context
  * Đảm bảo tất cả components dùng cùng một instance của transactions state
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTransactionsContext = () => {
   const context = useContext(TransactionsContext);
   if (!context) {
@@ -29,4 +30,3 @@ export const useTransactionsContext = () => {
   }
   return context;
 };
-

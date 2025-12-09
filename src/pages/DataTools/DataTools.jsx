@@ -27,6 +27,8 @@ import {
   Trash2,
   ExternalLink,
   Plus,
+  FileText,
+  Tag,
 } from "lucide-react";
 import { useDataTools } from "./useDataTools";
 import { IMPORT_TEXTAREA_PLACEHOLDER } from "./constants";
@@ -39,6 +41,7 @@ import {
   formatAmountInput,
   parseAmountInput,
 } from "../../utils/formatCurrency";
+import CategoryManager from "../../components/CategoryManager/CategoryManager";
 
 /**
  * Component trang Công cụ Dữ liệu
@@ -72,6 +75,7 @@ function DataTools() {
     handleExportToExcel,
     handleCopyToClipboard,
     handleExportToGoogleSheets,
+    handleExportPDF,
   } = useDataTools();
 
   return (
@@ -1113,6 +1117,32 @@ function DataTools() {
               </CardBody>
             </Card>
 
+            {/* Nút xuất PDF */}
+            <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
+              <CardBody className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      Xuất ra PDF (.pdf)
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Tải xuống báo cáo PDF chuyên nghiệp (Beta)
+                    </p>
+                  </div>
+                  <Button
+                    color="danger"
+                    size="lg"
+                    startContent={<FileText className="w-5 h-5" />}
+                    onPress={handleExportPDF}
+                    disabled={transactionsCount === 0}
+                    className="w-full sm:w-auto"
+                  >
+                    Xuất ra PDF
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+
             {/* Nút copy to clipboard */}
             <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
               <CardBody className="p-6">
@@ -1261,6 +1291,27 @@ function DataTools() {
                 </CardBody>
               </Card>
             )}
+          </div>
+        </Tab>
+
+        {/* Tab D: Quản lý Danh mục */}
+        <Tab
+          key="categories"
+          title={
+            <Tooltip
+              content="Quản lý danh mục"
+              placement="bottom"
+              className="sm:hidden"
+            >
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Tag className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="hidden sm:inline">Danh mục</span>
+              </div>
+            </Tooltip>
+          }
+        >
+          <div className="space-y-3 sm:space-y-4 md:space-y-6 mt-3 sm:mt-4 md:mt-6">
+            <CategoryManager />
           </div>
         </Tab>
       </Tabs>

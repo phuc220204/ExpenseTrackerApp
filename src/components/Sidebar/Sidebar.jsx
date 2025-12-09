@@ -12,6 +12,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { MENU_ITEMS, APP_NAME } from "./constants";
 import ProfileAvatar from "../ProfileAvatar";
+import LedgerSwitcher from "../LedgerSwitcher/LedgerSwitcher";
 
 /**
  * Component Sidebar - Navigation menu cho ứng dụng
@@ -42,10 +43,22 @@ const Sidebar = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40">
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-800">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            {APP_NAME}
-          </h1>
+        <div className="flex flex-col w-full border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-center h-16 w-full px-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="/logoApp.svg"
+                alt="Logo App"
+                className="w-10 h-10 object-contain"
+              />
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                {APP_NAME}
+              </h1>
+            </div>
+          </div>
+          <div className="px-4 pb-3">
+            <LedgerSwitcher />
+          </div>
         </div>
 
         {/* Navigation */}
@@ -79,10 +92,27 @@ const Sidebar = () => {
         </div>
       </aside>
 
+      {/* Mobile Top Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50 px-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <img
+            src="/logoApp.svg"
+            alt="Logo"
+            className="w-8 h-8 object-contain"
+          />
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+            {APP_NAME}
+          </h1>
+        </div>
+        <div className="w-36">
+          <LedgerSwitcher />
+        </div>
+      </header>
+
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50 pb-safe">
-        <div className="grid grid-cols-4 h-16 pb-safe">
-          {/* Menu Items - Tổng Quan, Thống Kê, Công cụ Dữ liệu */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 z-50 pb-safe shadow-lg">
+        <div className="grid grid-cols-5 h-16 pb-safe">
+          {/* Menu Items */}
           {MENU_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -91,24 +121,51 @@ const Sidebar = () => {
                 to={item.path}
                 end={item.path === "/"}
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center h-full transition-all duration-200 ${
+                  `flex flex-col items-center justify-center h-full transition-all duration-300 relative group ${
                     isActive
-                      ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
-                      : "text-gray-600 dark:text-gray-400 active:bg-gray-50 dark:active:bg-gray-800"
+                      ? "text-primary-600 dark:text-primary-400"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`
                 }
               >
-                <Icon className="w-5 h-5 mb-0.5" />
-                <span className="text-xs font-medium leading-tight">
-                  {item.label}
-                </span>
+                {({ isActive }) => (
+                  <>
+                    <div
+                      className={`p-1.5 rounded-xl transition-all duration-300 ${
+                        isActive
+                          ? "bg-primary-100 dark:bg-primary-900/40 transform -translate-y-1"
+                          : "group-hover:bg-gray-100 dark:group-hover:bg-gray-800"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-5 h-5 ${
+                          isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-[10px] font-medium mt-1 transition-all ${
+                        isActive ? "opacity-100 font-semibold" : "opacity-70"
+                      }`}
+                    >
+                      {item.label === "Công cụ Dữ liệu"
+                        ? "Công cụ"
+                        : item.label}
+                    </span>
+                    {isActive && (
+                      <span className="absolute bottom-1 w-1 h-1 bg-current rounded-full" />
+                    )}
+                  </>
+                )}
               </NavLink>
             );
           })}
-          
+
           {/* Profile Avatar cho Mobile */}
           <div className="flex flex-col items-center justify-center h-full">
-            <ProfileAvatar onLogoutClick={onOpen} isMobile />
+            <div className="p-1.5">
+              <ProfileAvatar onLogoutClick={onOpen} isMobile />
+            </div>
           </div>
         </div>
       </nav>
@@ -156,4 +213,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-

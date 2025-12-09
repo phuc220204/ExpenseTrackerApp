@@ -31,20 +31,22 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);
-      
+
       // Xử lý các loại lỗi khác nhau
       let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
-      
+
       if (error.code === "auth/popup-closed-by-user") {
-        errorMessage = "Bạn đã đóng cửa sổ đăng nhập. Vui lòng thử lại và hoàn tất quá trình đăng nhập.";
+        errorMessage =
+          "Bạn đã đóng cửa sổ đăng nhập. Vui lòng thử lại và hoàn tất quá trình đăng nhập.";
       } else if (error.code === "auth/popup-blocked") {
-        errorMessage = "Cửa sổ đăng nhập bị chặn bởi trình duyệt. Vui lòng cho phép popup và thử lại.";
+        errorMessage =
+          "Cửa sổ đăng nhập bị chặn bởi trình duyệt. Vui lòng cho phép popup và thử lại.";
       } else if (error.code === "auth/cancelled-popup-request") {
         errorMessage = "Yêu cầu đăng nhập đã bị hủy. Vui lòng thử lại.";
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -121,7 +123,8 @@ const Login = () => {
 
           {/* Thông tin bổ sung */}
           <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-            Bằng cách đăng nhập, bạn đồng ý với các điều khoản sử dụng của chúng tôi
+            Bằng cách đăng nhập, bạn đồng ý với các điều khoản sử dụng của chúng
+            tôi
           </p>
         </CardBody>
       </Card>
@@ -130,4 +133,3 @@ const Login = () => {
 };
 
 export default Login;
-

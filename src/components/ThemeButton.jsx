@@ -1,13 +1,13 @@
 import { Button } from "@heroui/react";
 import { Moon, Sun } from "lucide-react";
-import { useSidebar } from "./Sidebar/useSidebar";
+import { useTheme } from "../contexts/ThemeContext";
 
 /**
  * Component nút chuyển đổi theme (Light/Dark)
  * Hiển thị icon Sun/Moon nhỏ gọn, tái sử dụng được
  */
 const ThemeButton = () => {
-  const { theme, toggleTheme } = useSidebar();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <Button
@@ -28,4 +28,3 @@ const ThemeButton = () => {
 };
 
 export default ThemeButton;
-

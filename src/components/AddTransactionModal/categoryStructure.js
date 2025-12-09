@@ -50,7 +50,7 @@ export const CATEGORY_ICONS = {
   "Giáo dục": GraduationCap,
   "Tiết kiệm/Đầu tư": PiggyBank,
   "Thu nhập": Wallet,
-  "Khác": MoreHorizontal,
+  Khác: MoreHorizontal,
 };
 
 /**
@@ -60,55 +60,54 @@ export const SUBCATEGORY_ICONS = {
   // Ăn uống
   "Đi chợ/Tạp hóa": ShoppingCart,
   "Nhà hàng": Utensils,
-  "Cafe": Coffee,
+  Cafe: Coffee,
   "Đồ uống": Coffee,
-  
+
   // Di chuyển
   "Sửa xe/Bảo dưỡng": Wrench,
   "Xăng/Dầu": Fuel,
   "Taxi/Xe công nghệ": Navigation,
   "Gửi xe": Car,
   "Phí cầu đường": Car,
-  
+
   // Mua sắm
   "Quần áo": ShoppingBag,
   "Điện tử": ShoppingBag,
   "Đồ gia dụng": Home,
   "Mỹ phẩm": ShoppingBag,
-  
+
   // Hóa đơn
-  "Điện": Zap,
-  "Nước": Droplets,
-  "Internet": Phone,
+  Điện: Zap,
+  Nước: Droplets,
+  Internet: Phone,
   "Điện thoại": Phone,
   "Bảo hiểm": FileText,
-  
+
   // Giải trí
   "Xem phim": Film,
   "Chơi game": Gamepad2,
   "Du lịch": Car,
   "Thể thao": Gamepad2,
-  
+
   // Y tế
   "Khám bệnh": Stethoscope,
-  "Thuốc": Pill,
+  Thuốc: Pill,
   "Bảo hiểm y tế": Heart,
-  
+
   // Giáo dục
   "Học phí": GraduationCap,
   "Sách vở": BookOpen,
   "Khóa học": BookOpen,
-  
+
   // Tiết kiệm/Đầu tư
   "Tiết kiệm": PiggyBank,
   "Đầu tư": TrendingUp,
   "Chứng khoán": TrendingUp,
-  
+
   // Thu nhập
-  "Lương": Briefcase,
-  "Freelance": Briefcase,
-  "Thưởng": Gift,
-  "Đầu tư": TrendingUp,
+  Lương: Briefcase,
+  Freelance: Briefcase,
+  Thưởng: Gift,
   "Trợ cấp gia đình": HandCoins,
   "Sinh hoạt phí": HandCoins,
   "Tiền tiêu": HandCoins,
@@ -123,12 +122,7 @@ export const CATEGORY_STRUCTURE = {
   expense: {
     "Ăn uống": {
       icon: Utensils,
-      subcategories: [
-        "Đi chợ/Tạp hóa",
-        "Nhà hàng",
-        "Cafe",
-        "Đồ uống",
-      ],
+      subcategories: ["Đi chợ/Tạp hóa", "Nhà hàng", "Cafe", "Đồ uống"],
     },
     "Di chuyển": {
       icon: Car,
@@ -142,62 +136,34 @@ export const CATEGORY_STRUCTURE = {
     },
     "Mua sắm": {
       icon: ShoppingBag,
-      subcategories: [
-        "Quần áo",
-        "Điện tử",
-        "Đồ gia dụng",
-        "Mỹ phẩm",
-      ],
+      subcategories: ["Quần áo", "Điện tử", "Đồ gia dụng", "Mỹ phẩm"],
     },
     "Hóa đơn": {
       icon: FileText,
-      subcategories: [
-        "Điện",
-        "Nước",
-        "Internet",
-        "Điện thoại",
-        "Bảo hiểm",
-      ],
+      subcategories: ["Điện", "Nước", "Internet", "Điện thoại", "Bảo hiểm"],
     },
     "Giải trí": {
       icon: Music,
-      subcategories: [
-        "Xem phim",
-        "Chơi game",
-        "Du lịch",
-        "Thể thao",
-      ],
+      subcategories: ["Xem phim", "Chơi game", "Du lịch", "Thể thao"],
     },
     "Y tế": {
       icon: Heart,
-      subcategories: [
-        "Khám bệnh",
-        "Thuốc",
-        "Bảo hiểm y tế",
-      ],
+      subcategories: ["Khám bệnh", "Thuốc", "Bảo hiểm y tế"],
     },
     "Giáo dục": {
       icon: GraduationCap,
-      subcategories: [
-        "Học phí",
-        "Sách vở",
-        "Khóa học",
-      ],
+      subcategories: ["Học phí", "Sách vở", "Khóa học"],
     },
     "Tiết kiệm/Đầu tư": {
       icon: PiggyBank,
-      subcategories: [
-        "Tiết kiệm",
-        "Đầu tư",
-        "Chứng khoán",
-      ],
+      subcategories: ["Tiết kiệm", "Đầu tư", "Chứng khoán"],
     },
-    "Khác": {
+    Khác: {
       icon: MoreHorizontal,
       subcategories: [],
     },
   },
-  
+
   // THU NHẬP
   income: {
     "Thu nhập": {
@@ -213,7 +179,7 @@ export const CATEGORY_STRUCTURE = {
         "Tiền cho",
       ],
     },
-    "Khác": {
+    Khác: {
       icon: MoreHorizontal,
       subcategories: [],
     },
@@ -270,4 +236,3 @@ export const findCategoryFromSubcategory = (type, subcategory) => {
   }
   return null;
 };
-
