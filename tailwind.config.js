@@ -26,5 +26,28 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [heroui()],
+  plugins: [
+    heroui({
+      themes: {
+        light: {
+          colors: {
+            primary: {
+              DEFAULT: "#2563EB", // Trust Blue
+              foreground: "#FFFFFF",
+            },
+            focus: "#2563EB",
+          },
+        },
+        dark: {
+          colors: {
+            primary: {
+              DEFAULT: "#2563EB", // Same for dark mode or adjust if needed
+              foreground: "#FFFFFF",
+            },
+            focus: "#2563EB",
+          },
+        },
+      },
+    }),
+  ],
 };

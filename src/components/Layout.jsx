@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar/Sidebar";
 import AddTransactionModal from "./AddTransactionModal/AddTransactionModal";
 import FloatingActionButton from "./FloatingActionButton";
 import AIChatBox from "./AIChat/AIChatBox";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { useTransactionsContext } from "../contexts/TransactionsContext";
 import { useDisclosure } from "@heroui/react";
 
@@ -60,6 +61,9 @@ const Layout = () => {
 
       {/* AI Chat Box */}
       <AIChatBox isOpen={isChatOpen} onOpenChange={onChatOpenChange} />
+
+      {/* Vercel Speed Insights */}
+      <SpeedInsights />
 
       {/* Modal thêm/sửa giao dịch */}
       <AddTransactionModal
