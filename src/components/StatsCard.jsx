@@ -66,7 +66,7 @@ const StatsCard = ({ title, value, type, icon: Icon, subtitle }) => {
 
   return (
     <Card
-      className={`${colors.lightBg} ${colors.border} border overflow-hidden shadow-lg ${colors.glow} hover:shadow-xl hover:scale-[1.02] transition-all duration-300`}
+      className={`${colors.lightBg} ${colors.border} border overflow-hidden shadow-lg ${colors.glow} cursor-pointer backdrop-blur-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200`}
     >
       <CardBody className="p-4 sm:p-5">
         <div className="flex items-center justify-between">
@@ -77,15 +77,20 @@ const StatsCard = ({ title, value, type, icon: Icon, subtitle }) => {
             </p>
             {/* Value - bigger and bolder */}
             <p
-              className={`text-xl sm:text-2xl md:text-3xl font-extrabold ${colors.text} truncate`}
+              className={`text-xl sm:text-2xl md:text-3xl font-extrabold ${colors.text} truncate number-change`}
             >
-              {type === "balance" && isNegative
-                ? ""
-                : type === "income"
+              {type === "income"
                 ? "+"
-                : "-"}
+                : type === "expense"
+                ? "-"
+                : type === "balance"
+                ? isNegative
+                  ? "-"
+                  : "+"
+                : ""}
               {formatCurrency(Math.abs(value))}
             </p>
+
             {/* Subtitle indicator */}
             {subtitle && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">

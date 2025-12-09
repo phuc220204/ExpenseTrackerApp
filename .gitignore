@@ -30,3 +30,11 @@ dist-ssr
 
 # Firebase cache
 .firebase/
+
+# Internal Tool Folders
+.agent/workflows
+.shared/ui-ux-pro-max/data
+.shared/ui-ux-pro-max/scripts
+.shared/ui-ux-pro-max/stacks
+.shared/
+.agent/

@@ -19,7 +19,7 @@ const Planning = () => {
   return (
     <div className="space-y-6 pb-24 md:pb-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-3xl font-heading font-bold text-slate-900 dark:text-white tracking-tight">
           Kế Hoạch Tài Chính
         </h1>
         <p className="text-slate-500">

@@ -44,10 +44,10 @@ const Sidebar = () => {
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40">
         {/* Logo */}
         <div className="flex flex-col w-full border-b border-gray-200 dark:border-gray-800">
-          <div className="flex items-center justify-center h-16 w-full px-4">
+          <div className="flex items-center justify-start h-16 w-full px-4">
             <div className="flex items-center gap-3">
               <img
-                src="/logoApp.svg"
+                src="/logoApp.png"
                 alt="Logo App"
                 className="w-10 h-10 object-contain"
               />
@@ -96,7 +96,7 @@ const Sidebar = () => {
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50 px-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img
-            src="/logoApp.svg"
+            src="/logoApp.png"
             alt="Logo"
             className="w-8 h-8 object-contain"
           />

@@ -61,15 +61,23 @@ const Login = () => {
           <div className="text-center space-y-4">
             <div className="flex justify-center">
               <div className="p-4 bg-primary-100 dark:bg-primary-900/30 rounded-full">
-                <Wallet className="w-12 h-12 text-primary-600 dark:text-primary-400" />
+                <img
+                  src="/logoApp.png"
+                  alt="Ví Vi Vu Logo"
+                  className="w-12 h-12"
+                />
               </div>
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                ExpenseTracker
+                Ví Vi Vu
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Quản lý thu chi cá nhân của bạn
+              <p className="text-lg font-medium text-primary-600 dark:text-primary-400 mt-2">
+                Sống vi vu, không lo túi
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                Quản lý thu chi thông minh với AI, từ kế hoạch du lịch đến chi
+                tiêu hằng ngày
               </p>
             </div>
           </div>

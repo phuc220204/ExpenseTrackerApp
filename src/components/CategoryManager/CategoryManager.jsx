@@ -364,7 +364,11 @@ const CategoryManager = () => {
                 <Button variant="light" onPress={onClose}>
                   Hủy
                 </Button>
-                <Button color="primary" onPress={handleSubmit}>
+                <Button
+                  color="primary"
+                  onPress={handleSubmit}
+                  className="active-scale"
+                >
                   {editingCategory ? "Lưu" : "Thêm"}
                 </Button>
               </ModalFooter>

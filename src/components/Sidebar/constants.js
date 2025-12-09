@@ -4,7 +4,7 @@ import { LayoutDashboard, PieChart, Database, PiggyBank } from "lucide-react";
  * Tên ứng dụng hiển thị trên Sidebar
  * @type {string}
  */
-export const APP_NAME = "ExpenseTracker";
+export const APP_NAME = "Ví Vi Vu";
 
 /**
  * Danh sách các menu items cho navigation

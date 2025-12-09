@@ -8,11 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["logoApp.svg"],
+      includeAssets: ["logoApp.png"],
       manifest: {
-        name: "Sổ Thu Chi AI",
-        short_name: "Thu Chi",
-        description: "Ứng dụng quản lý thu chi cá nhân thông minh",
+        name: "Ví Vi Vu",
+        short_name: "Vi Vu",
+        description: "Sống vi vu, không lo túi - Sổ thu chi AI",
         theme_color: "#3B82F6",
         background_color: "#0F172A",
         display: "standalone",
@@ -20,9 +20,9 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/logoApp.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/logoApp.png",
+            sizes: "512x512",
+            type: "image/png",
             purpose: "any maskable",
           },
         ],

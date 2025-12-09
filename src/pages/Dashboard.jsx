@@ -92,7 +92,7 @@ function Dashboard() {
               </span>
             </div>
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold text-gray-900 dark:text-white tracking-tight">
               Tổng Quan
             </h1>
             {/* Date */}

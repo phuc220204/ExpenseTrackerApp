@@ -204,7 +204,11 @@ const AddTransactionModal = ({
               <Button color="danger" variant="light" onPress={onClose}>
                 Hủy
               </Button>
-              <Button color="primary" onPress={handleSubmit}>
+              <Button
+                color="primary"
+                onPress={handleSubmit}
+                className="active-scale"
+              >
                 {isEditMode ? "Lưu Thay Đổi" : "Thêm"}
               </Button>
             </ModalFooter>
