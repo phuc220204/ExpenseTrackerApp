@@ -64,7 +64,9 @@ const GoalCard = ({ goal, onAddMoney, onEdit, onDelete }) => {
   const isOverdue = daysRemaining !== null && daysRemaining < 0 && !isCompleted;
 
   const handleAddMoney = async () => {
-    const amount = parseFloat(addAmount.replace(/,/g, ""));
+    // Loại bỏ cả dấu chấm và phẩy (VN dùng dấu chấm phân cách nghìn)
+    const cleanedAmount = addAmount.replace(/[.,]/g, "");
+    const amount = parseInt(cleanedAmount, 10);
     if (isNaN(amount) || amount <= 0) return;
 
     setIsLoading(true);

@@ -19,8 +19,9 @@ const MAX_REQUESTS_PER_MINUTE = 10; // Tối đa 10 requests/phút
 export const useAIChat = () => {
   const { apiKey, hasKey } = useGeminiKey();
   const { currentUser } = useAuth();
-  const { addTransaction, deleteTransaction, transactions } =
+  const { addTransaction, deleteTransaction, transactions, currentLedger } =
     useTransactionsContext();
+
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [previewTransaction, setPreviewTransaction] = useState(null);
@@ -126,6 +127,7 @@ export const useAIChat = () => {
       // Chuẩn bị context cho function handlers
       const context = {
         userId: currentUser.uid,
+        ledgerId: currentLedger?.id || "main",
         transactions: transactions || [],
         addTransaction: addTransaction,
         deleteTransaction: deleteTransaction,

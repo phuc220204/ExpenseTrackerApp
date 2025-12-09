@@ -36,9 +36,10 @@ export const AuthProvider = ({ children }) => {
         const currentTime = Date.now();
 
         if (currentTime - lastSignInTime > SESSION_TIMEOUT_MS) {
-          console.log(
+          console.warn(
             "Phiên đăng nhập hết hạn (quá 3 tiếng). Đang đăng xuất..."
           );
+
           await signOut(auth);
           setCurrentUser(null);
         } else {

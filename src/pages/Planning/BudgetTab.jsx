@@ -122,6 +122,7 @@ const BudgetTab = () => {
               </span>
             </div>
             <Progress
+              aria-label="Tiến độ chi tiêu tổng"
               value={
                 (totalBudgetInfo.totalSpent / totalBudgetInfo.totalLimit) *
                   100 || 0

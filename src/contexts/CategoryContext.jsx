@@ -21,6 +21,7 @@ import {
 
 const CategoryContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCategoryContext = () => {
   const context = useContext(CategoryContext);
   if (!context) {

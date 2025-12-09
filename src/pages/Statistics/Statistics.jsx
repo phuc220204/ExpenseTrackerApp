@@ -29,7 +29,8 @@ import { formatCurrency } from "../../utils/formatCurrency";
 const StatCard = ({
   title,
   value,
-  icon: Icon,
+  // eslint-disable-next-line no-unused-vars
+  icon: IconComponent,
   gradient,
   trend,
   trendValue,
@@ -52,7 +53,7 @@ const StatCard = ({
           )}
         </div>
         <div className="p-3 bg-white/20 rounded-xl">
-          <Icon className="w-6 h-6" />
+          <IconComponent className="w-6 h-6" />
         </div>
       </div>
     </CardBody>

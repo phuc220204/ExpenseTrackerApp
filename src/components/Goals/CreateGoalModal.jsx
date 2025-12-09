@@ -60,7 +60,9 @@ const CreateGoalModal = ({ isOpen, onClose, onSave, editingGoal = null }) => {
   }, [editingGoal, isOpen]);
 
   const handleSubmit = async () => {
-    const targetAmount = parseFloat(formData.targetAmount.replace(/,/g, ""));
+    // Loại bỏ tất cả dấu chấm và phẩy (phân cách nghìn VN)
+    const cleanedAmount = formData.targetAmount.replace(/[.,]/g, "");
+    const targetAmount = parseInt(cleanedAmount, 10);
 
     if (!formData.name || isNaN(targetAmount) || targetAmount <= 0) {
       return;

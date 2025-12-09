@@ -36,6 +36,36 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import { formatCurrency } from "../../utils/formatCurrency";
+
+/**
+ * Parse amount string với hỗ trợ "k" (nghìn) và "m" (triệu)
+ * Ví dụ: "55k" -> 55000, "1.5m" -> 1500000, "100000" -> 100000
+ * @param {string|number} input
+ * @returns {number}
+ */
+const parseVNDAmount = (input) => {
+  if (typeof input === "number") return input;
+  if (!input) return 0;
+
+  const str = String(input).toLowerCase().trim();
+
+  // Check for "k" suffix (nghìn)
+  if (str.endsWith("k")) {
+    const num = parseFloat(str.slice(0, -1).replace(/,/g, "."));
+    return isNaN(num) ? 0 : Math.round(num * 1000);
+  }
+
+  // Check for "m" suffix (triệu)
+  if (str.endsWith("m")) {
+    const num = parseFloat(str.slice(0, -1).replace(/,/g, "."));
+    return isNaN(num) ? 0 : Math.round(num * 1000000);
+  }
+
+  // Parse số bình thường (loại bỏ dấu chấm phân cách)
+  const cleaned = str.replace(/[^\d]/g, "");
+  return parseInt(cleaned, 10) || 0;
+};
 
 /**
  * Component ShoppingListTab - Sổ Tay Mua Sắm
@@ -53,6 +83,10 @@ const ShoppingListTab = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // Modal tạo Plan mới
   const [newPlanName, setNewPlanName] = useState("");
   const [newPlanBudget, setNewPlanBudget] = useState("");
+
+  // Delete confirmation modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState(null);
 
   // Loading real-time data
   useEffect(() => {
@@ -88,7 +122,7 @@ const ShoppingListTab = () => {
       );
       await setDoc(newRef, {
         name: newPlanName,
-        budget: Number(newPlanBudget),
+        budget: parseVNDAmount(newPlanBudget),
         items: [], // { id, name, price, isBought }
         createdAt: serverTimestamp(),
       });
@@ -100,16 +134,24 @@ const ShoppingListTab = () => {
     }
   };
 
-  const handleDeletePlan = async (planId) => {
-    if (!window.confirm("Bạn có chắc muốn xóa kế hoạch này?")) return;
+  const handleDeletePlan = async () => {
+    if (!planToDelete) return;
     try {
       await deleteDoc(
-        doc(db, "users", currentUser.uid, "shopping_plans", planId)
+        doc(db, "users", currentUser.uid, "shopping_plans", planToDelete)
       );
-      if (activePlan?.id === planId) setActivePlan(null);
+      if (activePlan?.id === planToDelete) setActivePlan(null);
     } catch (e) {
       console.error("Lỗi xóa plan:", e);
+    } finally {
+      setDeleteModalOpen(false);
+      setPlanToDelete(null);
     }
+  };
+
+  const openDeleteModal = (planId) => {
+    setPlanToDelete(planId);
+    setDeleteModalOpen(true);
   };
 
   const handleAddItem = async (name, price) => {
@@ -117,7 +159,7 @@ const ShoppingListTab = () => {
     const newItem = {
       id: Date.now().toString(),
       name,
-      price: Number(price),
+      price: parseVNDAmount(price),
       isBought: false,
     };
     const updatedItems = [...activePlan.items, newItem];
@@ -201,7 +243,7 @@ const ShoppingListTab = () => {
             isIconOnly
             color="danger"
             variant="light"
-            onPress={() => handleDeletePlan(activePlan.id)}
+            onPress={() => openDeleteModal(activePlan.id)}
           >
             <Trash2 size={20} />
           </Button>
@@ -213,10 +255,7 @@ const ShoppingListTab = () => {
             <CardBody className="p-4">
               <p className="text-white/80 text-sm">Ngân sách</p>
               <p className="text-2xl font-bold">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(activePlan.budget)}
+                {formatCurrency(activePlan.budget)}
               </p>
             </CardBody>
           </Card>
@@ -228,10 +267,7 @@ const ShoppingListTab = () => {
                   remainingBudget < 0 ? "text-red-500" : "text-blue-600"
                 }`}
               >
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(totalEstimated)}
+                {formatCurrency(totalEstimated)}
               </p>
             </CardBody>
           </Card>
@@ -239,10 +275,7 @@ const ShoppingListTab = () => {
             <CardBody className="p-4">
               <p className="text-slate-500 text-sm">Thực tế đã mua</p>
               <p className="text-2xl font-bold text-green-600">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(totalBought)}
+                {formatCurrency(totalBought)}
               </p>
             </CardBody>
           </Card>
@@ -265,6 +298,7 @@ const ShoppingListTab = () => {
             </span>
           </div>
           <Progress
+            aria-label="Tiến độ ngân sách"
             value={Math.min(progress, 100)}
             color={remainingBudget < 0 ? "danger" : "primary"}
             className="h-3"
@@ -308,10 +342,7 @@ const ShoppingListTab = () => {
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-semibold text-slate-700 dark:text-slate-300">
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(item.price)}
+                  {formatCurrency(item.price)}
                 </span>
                 <Button
                   isIconOnly
@@ -354,88 +385,103 @@ const ShoppingListTab = () => {
 
             {/* Existing Plans */}
             {plans.map((plan) => (
-              <Card
+              <div
                 key={plan.id}
-                isPressable
-                onPress={() => setActivePlan(plan)}
-                className="h-48 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+                className="cursor-pointer"
+                onClick={() => setActivePlan(plan)}
               >
-                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    color="danger"
-                    variant="light"
-                    onPress={() => handleDeletePlan(plan.id)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-                <CardHeader className="flex gap-3">
-                  <div className="p-2 bg-gradient-to-tr from-pink-500 to-orange-400 rounded-lg text-white">
-                    <ShoppingBag size={20} />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <h3 className="font-bold text-lg text-slate-800 dark:text-white line-clamp-1">
-                      {plan.name}
-                    </h3>
-                    <p className="text-tiny text-slate-400">
-                      {new Date(
-                        plan.createdAt?.seconds * 1000
-                      ).toLocaleDateString("vi-VN")}
-                    </p>
-                  </div>
-                </CardHeader>
-                <CardBody className="justify-end pb-4">
-                  <div className="flex justify-between items-end mb-2">
-                    <span className="text-slate-500 text-xs">Ngân sách</span>
-                    <span className="text-lg font-bold text-primary-600">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(plan.budget)}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                    {/* Simple progress bar */}
-                    <div
-                      className="bg-primary-500 h-full"
-                      style={{
-                        width: `${Math.min(
-                          (plan.items?.reduce((s, i) => s + i.price, 0) /
-                            plan.budget) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <Chip size="sm" variant="flat" color="secondary">
-                      {plan.items?.length || 0} món
-                    </Chip>
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color={
-                        plan.items?.every((i) => i.isBought) &&
+                <Card className="h-48 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+                  <CardHeader className="flex gap-3">
+                    <div className="p-2 bg-gradient-to-tr from-pink-500 to-orange-400 rounded-lg text-white">
+                      <ShoppingBag size={20} />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <h3 className="font-bold text-lg text-slate-800 dark:text-white line-clamp-1">
+                        {plan.name}
+                      </h3>
+                      <p className="text-tiny text-slate-400">
+                        {new Date(
+                          plan.createdAt?.seconds * 1000
+                        ).toLocaleDateString("vi-VN")}
+                      </p>
+                    </div>
+                  </CardHeader>
+                  <CardBody className="justify-end pb-4">
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-slate-500 text-xs">Ngân sách</span>
+                      <span className="text-lg font-bold text-primary-600">
+                        {formatCurrency(plan.budget)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                      {/* Simple progress bar */}
+                      <div
+                        className="bg-primary-500 h-full"
+                        style={{
+                          width: `${Math.min(
+                            (plan.items?.reduce((s, i) => s + i.price, 0) /
+                              plan.budget) *
+                              100,
+                            100
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Chip size="sm" variant="flat" color="secondary">
+                        {plan.items?.length || 0} món
+                      </Chip>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={
+                          plan.items?.every((i) => i.isBought) &&
+                          plan.items.length > 0
+                            ? "success"
+                            : "warning"
+                        }
+                      >
+                        {plan.items?.every((i) => i.isBought) &&
                         plan.items.length > 0
-                          ? "success"
-                          : "warning"
-                      }
-                    >
-                      {plan.items?.every((i) => i.isBought) &&
-                      plan.items.length > 0
-                        ? "Đã xong"
-                        : "Đang mua"}
-                    </Chip>
-                  </div>
-                </CardBody>
-              </Card>
+                          ? "Đã xong"
+                          : "Đang mua"}
+                      </Chip>
+                    </div>
+                  </CardBody>
+                </Card>
+              </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        size="sm"
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2 text-danger-500">
+            <Trash2 className="w-5 h-5" />
+            Xác nhận xóa
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-gray-600 dark:text-gray-400">
+              Bạn có chắc chắn muốn xóa kế hoạch này? Hành động này không thể
+              hoàn tác.
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={() => setDeleteModalOpen(false)}>
+              Hủy
+            </Button>
+            <Button color="danger" onPress={handleDeletePlan}>
+              Xóa kế hoạch
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Modal Import */}
       <CreatePlanModal

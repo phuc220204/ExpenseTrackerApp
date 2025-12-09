@@ -323,14 +323,21 @@ const LedgerSwitcher = () => {
                     />
                   }
                   endContent={
-                    <div className="flex gap-1">
+                    <div
+                      className="flex gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {/* Edit button - hiển thị cho tất cả sổ */}
                       <Button
                         isIconOnly
                         size="sm"
                         variant="light"
                         className="min-w-6 w-6 h-6"
-                        onPress={(e) => handleOpenEdit(item, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleOpenEdit(item, e);
+                        }}
                       >
                         <Pencil size={12} className="text-gray-500" />
                       </Button>
@@ -341,7 +348,11 @@ const LedgerSwitcher = () => {
                           size="sm"
                           variant="light"
                           className="min-w-6 w-6 h-6"
-                          onPress={(e) => handleOpenDelete(item, e)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleOpenDelete(item, e);
+                          }}
                         >
                           <Trash2 size={12} className="text-red-500" />
                         </Button>

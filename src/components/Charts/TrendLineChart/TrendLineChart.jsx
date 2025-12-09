@@ -68,7 +68,12 @@ const TrendLineChart = () => {
         </p>
       </CardHeader>
       <CardBody className="overflow-hidden">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={100}
+          minHeight={200}
+        >
           <LineChart
             data={data}
             margin={{ top: 20, right: 30, left: -10, bottom: 0 }}

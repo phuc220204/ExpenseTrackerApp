@@ -123,25 +123,25 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
     <>
       {/* Floating Action Button removed - Controlled by external SpeedDial */}
 
-      {/* Modal Chat Box - Full screen on mobile */}
+      {/* Modal Chat Box */}
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        size="full"
+        size="5xl"
         placement="center"
         scrollBehavior="inside"
         hideCloseButton
         classNames={{
-          base: "m-0 sm:m-4 sm:max-w-2xl sm:max-h-[90vh] rounded-none sm:rounded-2xl",
+          base: "mx-2 sm:mx-4 max-h-[85vh] sm:max-h-[80vh]",
           body: "p-0",
-          wrapper: "sm:items-center",
+          backdrop: "bg-black/50",
         }}
       >
         <ModalContent>
           {(onClose) => (
             <>
               {/* Header với gradient */}
-              <ModalHeader className="flex items-center justify-between bg-gradient-to-r from-primary-500 via-primary-600 to-blue-600 text-white p-4">
+              <ModalHeader className="flex items-center justify-between bg-gradient-to-r from-primary-500 via-primary-600 to-blue-600 text-white p-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                     <Sparkles className="w-6 h-6 text-white" />
@@ -191,9 +191,9 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
                   </Button>
                 </div>
               </ModalHeader>
-              <ModalBody className="p-0 flex-1">
-                {/* Chat Messages - Full height on mobile */}
-                <div className="flex flex-col h-full min-h-[400px] sm:h-[600px] bg-gray-50 dark:bg-gray-900">
+              <ModalBody className="p-0">
+                {/* Chat Messages */}
+                <div className="flex flex-col h-[60vh] sm:h-[55vh] bg-gray-50 dark:bg-gray-900">
                   {!hasKey ? (
                     <div className="flex-1 flex items-center justify-center p-6">
                       <div className="text-center">
@@ -706,42 +706,42 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
 
                   {/* API Quota Explanation */}
                   <Divider />
-                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                  <div className="bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                     <div className="flex items-start gap-3">
-                      <div className="bg-amber-500 p-2 rounded-lg flex-shrink-0">
+                      <div className="bg-gray-500 dark:bg-gray-600 p-2 rounded-lg flex-shrink-0">
                         <HelpCircle className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 space-y-2">
-                        <h4 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">
+                        <h4 className="font-semibold text-gray-700 dark:text-gray-300 text-sm">
                           ⚡ Giới hạn sử dụng API (Quota)
                         </h4>
-                        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                           AI này sử dụng <strong>Google Gemini API</strong> (gói
                           miễn phí). Bạn có <strong>giới hạn số lần hỏi</strong>{" "}
                           mỗi ngày:
                         </p>
                         <div className="grid grid-cols-2 gap-2 mt-2">
-                          <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2 text-center">
-                            <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                          <div className="bg-white dark:bg-gray-700 rounded-lg p-2 text-center border border-gray-200 dark:border-gray-600">
+                            <p className="text-lg font-bold text-gray-800 dark:text-gray-200">
                               10
                             </p>
-                            <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400">
                               lần/phút
                             </p>
                           </div>
-                          <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2 text-center">
-                            <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                          <div className="bg-white dark:bg-gray-700 rounded-lg p-2 text-center border border-gray-200 dark:border-gray-600">
+                            <p className="text-lg font-bold text-gray-800 dark:text-gray-200">
                               ~1500
                             </p>
-                            <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400">
                               lần/ngày
                             </p>
                           </div>
                         </div>
-                        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed mt-2">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mt-2">
                           <strong>Mẹo tiết kiệm:</strong>
                         </p>
-                        <ul className="text-[11px] text-amber-600 dark:text-amber-400 space-y-1 list-disc list-inside">
+                        <ul className="text-[11px] text-gray-500 dark:text-gray-400 space-y-1 list-disc list-inside">
                           <li>
                             Gộp nhiều giao dịch vào 1 tin nhắn thay vì gửi riêng
                             lẻ
@@ -749,7 +749,7 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
                           <li>Chờ AI trả lời xong mới gửi câu tiếp theo</li>
                           <li>Tránh spam gửi liên tục</li>
                         </ul>
-                        <p className="text-[10px] text-amber-500 dark:text-amber-500 mt-2">
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 italic">
                           Nếu vượt giới hạn, bạn cần đợi 1 phút hoặc đến ngày
                           hôm sau.
                         </p>

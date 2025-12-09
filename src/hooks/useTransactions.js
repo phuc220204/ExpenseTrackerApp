@@ -405,12 +405,14 @@ const useTransactions = () => {
  * @param {string} userId - User ID
  * @param {string} startDate - Ngày bắt đầu (YYYY-MM-DD)
  * @param {string} endDate - Ngày kết thúc (YYYY-MM-DD)
+ * @param {string} ledgerId - ID của sổ ledger (mặc định 'main')
  * @returns {Promise<Array>} Mảng các transactions trong khoảng thời gian
  */
 export const getTransactionsByDateRange = async (
   userId,
   startDate,
-  endDate
+  endDate,
+  ledgerId = "main"
 ) => {
   if (!userId) {
     console.error("User ID is required to fetch transactions.");
@@ -420,12 +422,11 @@ export const getTransactionsByDateRange = async (
   try {
     const transactionsRef = collection(db, "users", userId, "transactions");
 
-    console.log("Querying Firestore with:", { userId, startDate, endDate });
-
-    // Tạo query với filter theo date range
+    // Tạo query với filter theo date range VÀ ledgerId
     // Lưu ý: Firestore so sánh string date theo thứ tự từ điển (YYYY-MM-DD)
     const q = query(
       transactionsRef,
+      where("ledgerId", "==", ledgerId),
       where("date", ">=", startDate),
       where("date", "<=", endDate),
       orderBy("date", "desc")
@@ -441,10 +442,6 @@ export const getTransactionsByDateRange = async (
         date: data.date || "",
       };
     });
-
-    console.log(
-      `Tìm thấy ${transactionsData.length} giao dịch trong khoảng ${startDate} đến ${endDate}`
-    );
 
     return transactionsData;
   } catch (error) {
@@ -467,9 +464,6 @@ export const getTransactionsByDateRange = async (
           return txDate >= startDate && txDate <= endDate;
         });
 
-        console.log(
-          `Tìm thấy ${filtered.length} giao dịch (filtered client-side)`
-        );
         return filtered;
       } catch (fallbackError) {
         console.error("Lỗi khi query fallback:", fallbackError);

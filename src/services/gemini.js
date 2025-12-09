@@ -221,6 +221,22 @@ export const FUNCTION_DECLARATIONS = [
       required: ["transactionId"],
     },
   },
+  {
+    name: "deleteMultipleTransactions",
+    description:
+      "Xóa nhiều giao dịch cùng lúc. Dùng khi user muốn xóa tất cả giao dịch, xóa các giao dịch trong khoảng thời gian, hoặc xóa nhiều giao dịch theo điều kiện. QUAN TRỌNG: (1) Trước tiên gọi getTransactionsByDateRange để lấy danh sách và IDs của các giao dịch cần xóa, (2) Xác nhận với user số lượng giao dịch sẽ bị xóa, (3) Khi user đồng ý, gọi hàm này với mảng transactionIds.",
+    parameters: {
+      type: "object",
+      properties: {
+        transactionIds: {
+          type: "array",
+          items: { type: "string" },
+          description: "Mảng các ID giao dịch cần xóa",
+        },
+      },
+      required: ["transactionIds"],
+    },
+  },
 ];
 
 /**
@@ -419,7 +435,8 @@ export const processUserMessage = async (
                 result =
                   await functionHandlers.handleGetTransactionsByDateRange(
                     args,
-                    context.userId
+                    context.userId,
+                    context.ledgerId || "main"
                   );
               } else {
                 result = {
@@ -494,6 +511,24 @@ export const processUserMessage = async (
               }
               break;
 
+            case "deleteMultipleTransactions":
+              if (
+                functionHandlers.handleDeleteMultipleTransactions &&
+                context.deleteTransaction
+              ) {
+                result =
+                  await functionHandlers.handleDeleteMultipleTransactions(
+                    args,
+                    context.deleteTransaction
+                  );
+              } else {
+                result = {
+                  success: false,
+                  error: "Handler không khả dụng",
+                };
+              }
+              break;
+
             default:
               result = {
                 success: false,
@@ -501,7 +536,6 @@ export const processUserMessage = async (
               };
           }
 
-          console.log(`[Function Calling] Kết quả hàm ${name}:`, result);
           functionResults.push({
             name: name,
             response: result,
@@ -520,10 +554,6 @@ export const processUserMessage = async (
           });
         }
       }
-
-      console.log(
-        `[Function Calling] Đã thực thi ${functionResults.length} hàm, gửi kết quả lại cho AI...`
-      );
 
       // Gửi kết quả hàm lại cho AI để tạo phản hồi cuối cùng
       // Theo tài liệu: thêm model's function call và user's function response
@@ -559,11 +589,6 @@ export const processUserMessage = async (
           contents: functionResponseContents,
           systemInstruction: systemInstruction,
           config: config,
-        });
-
-        console.log("[Function Calling] finalResponse received:", {
-          hasText: !!finalResponse.text,
-          textPreview: finalResponse.text?.substring(0, 100),
         });
 
         finalText = finalResponse.text || "";
@@ -618,9 +643,6 @@ export const processUserMessage = async (
 
       // Final fallback: Nếu vẫn không có text, tạo từ function results
       if (!finalText || finalText.trim() === "") {
-        console.log(
-          "[Function Calling] No text from AI, generating from function results"
-        );
         const autoTexts = functionResults.map((fr) => {
           const result = fr.response;
           if (result.success) {
@@ -642,11 +664,6 @@ export const processUserMessage = async (
         });
         finalText = autoTexts.join("\n");
       }
-
-      console.log(
-        "[Function Calling] Final text to return:",
-        finalText?.substring(0, 200)
-      );
 
       return {
         text: finalText,
@@ -672,11 +689,6 @@ export const processUserMessage = async (
           }
         }
       }
-
-      console.log(
-        `[Function Calling] AI trả lời thông thường (không gọi hàm):`,
-        text.substring(0, 100) + "..."
-      );
 
       return {
         text: text,

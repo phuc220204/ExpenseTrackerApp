@@ -404,9 +404,14 @@ export const handleAddTransaction = async (params) => {
  *
  * @param {Object} params - Parameters từ AI (startDate, endDate)
  * @param {string} userId - User ID
+ * @param {string} ledgerId - Ledger ID để filter theo sổ hiện tại
  * @returns {Promise<Object>} Kết quả với danh sách transactions
  */
-export const handleGetTransactionsByDateRange = async (params, userId) => {
+export const handleGetTransactionsByDateRange = async (
+  params,
+  userId,
+  ledgerId = "main"
+) => {
   try {
     let { startDate, endDate } = params;
 
@@ -450,15 +455,11 @@ export const handleGetTransactionsByDateRange = async (params, userId) => {
       if (parsedEndDate) endDate = parsedEndDate;
     }
 
-    console.log("[handleGetTransactionsByDateRange] Date range:", {
-      original: params,
-      parsed: { startDate, endDate },
-    });
-
     const transactions = await getTransactionsByDateRange(
       userId,
       startDate,
-      endDate
+      endDate,
+      ledgerId
     );
 
     // Tối ưu: Chỉ gửi summary và sample (10 transactions gần nhất) để giảm token
@@ -543,11 +544,6 @@ export const handleGetTotalIncome = async (params, allTransactions) => {
         if (parsedEndDate) endDate = parsedEndDate;
       }
 
-      console.log("[handleGetTotalIncome] Date range parsed:", {
-        startDate,
-        endDate,
-      });
-
       // Filter theo date range
       if (startDate && endDate) {
         filteredTransactions = allTransactions.filter((tx) => {
@@ -556,11 +552,6 @@ export const handleGetTotalIncome = async (params, allTransactions) => {
         });
       }
     }
-
-    console.log(
-      "[handleGetTotalIncome] Filtered transactions count:",
-      filteredTransactions.length
-    );
 
     // Tính tổng thu nhập
     const incomeTransactions = filteredTransactions.filter(
@@ -624,11 +615,6 @@ export const handleGetTotalExpense = async (params, allTransactions) => {
         if (parsedEndDate) endDate = parsedEndDate;
       }
 
-      console.log("[handleGetTotalExpense] Date range parsed:", {
-        startDate,
-        endDate,
-      });
-
       // Filter theo date range
       if (startDate && endDate) {
         filteredTransactions = allTransactions.filter((tx) => {
@@ -637,11 +623,6 @@ export const handleGetTotalExpense = async (params, allTransactions) => {
         });
       }
     }
-
-    console.log(
-      "[handleGetTotalExpense] Filtered transactions count:",
-      filteredTransactions.length
-    );
 
     // Tính tổng chi tiêu
     const expenseTransactions = filteredTransactions.filter(
@@ -713,11 +694,6 @@ export const handleGetBalance = async (params, allTransactions) => {
         if (parsedEndDate) endDate = parsedEndDate;
       }
 
-      console.log("[handleGetBalance] Date range parsed:", {
-        startDate,
-        endDate,
-      });
-
       // Filter theo date range
       if (startDate && endDate) {
         filteredTransactions = allTransactions.filter((tx) => {
@@ -726,11 +702,6 @@ export const handleGetBalance = async (params, allTransactions) => {
         });
       }
     }
-
-    console.log(
-      "[handleGetBalance] Filtered transactions count:",
-      filteredTransactions.length
-    );
 
     // Tính tổng thu và tổng chi
     const totalIncome = filteredTransactions
@@ -806,6 +777,71 @@ export const handleDeleteTransaction = async (params, deleteTransaction) => {
     return {
       success: false,
       error: error.message || "Có lỗi xảy ra khi xóa giao dịch",
+    };
+  }
+};
+
+/**
+ * Handler cho hàm deleteMultipleTransactions
+ * Xóa nhiều giao dịch cùng lúc từ Firestore
+ *
+ * @param {Object} params - Parameters từ AI (transactionIds)
+ * @param {Function} deleteTransaction - Function từ TransactionsContext
+ * @returns {Promise<Object>} Kết quả xóa
+ */
+export const handleDeleteMultipleTransactions = async (
+  params,
+  deleteTransaction
+) => {
+  try {
+    const { transactionIds } = params;
+
+    if (
+      !transactionIds ||
+      !Array.isArray(transactionIds) ||
+      transactionIds.length === 0
+    ) {
+      return {
+        success: false,
+        error: "Thiếu thông tin: transactionIds phải là mảng không rỗng",
+      };
+    }
+
+    if (!deleteTransaction) {
+      return {
+        success: false,
+        error: "Hàm deleteTransaction không khả dụng",
+      };
+    }
+
+    // Xóa từng giao dịch
+    const results = [];
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const transactionId of transactionIds) {
+      try {
+        await deleteTransaction(transactionId);
+        successCount++;
+        results.push({ id: transactionId, success: true });
+      } catch (err) {
+        failCount++;
+        results.push({ id: transactionId, success: false, error: err.message });
+      }
+    }
+
+    return {
+      success: failCount === 0,
+      message: `Đã xóa ${successCount}/${transactionIds.length} giao dịch thành công.`,
+      successCount,
+      failCount,
+      totalRequested: transactionIds.length,
+    };
+  } catch (error) {
+    console.error("Lỗi khi xóa nhiều giao dịch:", error);
+    return {
+      success: false,
+      error: error.message || "Có lỗi xảy ra khi xóa nhiều giao dịch",
     };
   }
 };

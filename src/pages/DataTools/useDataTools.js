@@ -200,21 +200,14 @@ export const useDataTools = () => {
    * @param {Object} updates - Object chứa các field cần cập nhật
    */
   const updateParsedItem = (id, updates) => {
-    console.log("[DEBUG updateParsedItem] Called with:", { id, updates });
-
     setParsedData((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          console.log("[DEBUG updateParsedItem] Found item:", item);
           const updated = { ...item, ...updates };
           const errors = [];
 
           // === VALIDATE DATE ===
           const dateValid = parseDate(updated.date);
-          console.log("[DEBUG updateParsedItem] Date validation:", {
-            date: updated.date,
-            dateValid,
-          });
           if (!dateValid) {
             errors.push("Ngày không hợp lệ");
           }
@@ -228,11 +221,6 @@ export const useDataTools = () => {
             const cleaned = String(updated.amount).replace(/[^\d]/g, "");
             numericAmount = parseInt(cleaned, 10) || 0;
           }
-          console.log("[DEBUG updateParsedItem] Amount validation:", {
-            originalAmount: updated.amount,
-            numericAmount,
-            type: typeof updated.amount,
-          });
 
           if (numericAmount <= 0) {
             errors.push("Số tiền không hợp lệ");
@@ -248,12 +236,6 @@ export const useDataTools = () => {
           // === SET VALIDATION RESULT ===
           updated.errors = errors;
           updated.isValid = errors.length === 0;
-
-          console.log("[DEBUG updateParsedItem] Result:", {
-            errors,
-            isValid: updated.isValid,
-            updated,
-          });
 
           return updated;
         }
@@ -299,21 +281,14 @@ export const useDataTools = () => {
    * @param {Object} updates - Object chứa các field cần cập nhật
    */
   const updateDirectInputItem = (id, updates) => {
-    console.log("[DEBUG updateDirectInputItem] Called with:", { id, updates });
-
     setDirectInputData((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          console.log("[DEBUG updateDirectInputItem] Found item:", item);
           const updated = { ...item, ...updates };
           const errors = [];
 
           // === VALIDATE DATE ===
           const dateValid = parseDate(updated.date);
-          console.log("[DEBUG updateDirectInputItem] Date validation:", {
-            date: updated.date,
-            dateValid,
-          });
           if (!dateValid) {
             errors.push("Ngày không hợp lệ");
           }
@@ -327,11 +302,6 @@ export const useDataTools = () => {
             const cleaned = String(updated.amount).replace(/[^\d]/g, "");
             numericAmount = parseInt(cleaned, 10) || 0;
           }
-          console.log("[DEBUG updateDirectInputItem] Amount validation:", {
-            originalAmount: updated.amount,
-            numericAmount,
-            type: typeof updated.amount,
-          });
 
           if (numericAmount <= 0) {
             errors.push("Số tiền không hợp lệ");
@@ -342,12 +312,6 @@ export const useDataTools = () => {
           // === SET VALIDATION RESULT ===
           updated.errors = errors;
           updated.isValid = errors.length === 0;
-
-          console.log("[DEBUG updateDirectInputItem] Result:", {
-            errors,
-            isValid: updated.isValid,
-            updated,
-          });
 
           return updated;
         }
@@ -371,10 +335,6 @@ export const useDataTools = () => {
    * Merge cả dữ liệu từ paste và nhập trực tiếp
    */
   const handleSaveAll = async () => {
-    console.log("[DEBUG handleSaveAll] Called");
-    console.log("[DEBUG handleSaveAll] parsedData:", parsedData);
-    console.log("[DEBUG handleSaveAll] directInputData:", directInputData);
-
     if (!currentUser) {
       alert("Vui lòng đăng nhập để lưu dữ liệu");
       return;
@@ -383,9 +343,6 @@ export const useDataTools = () => {
     // Merge và lọc chỉ lấy các transaction hợp lệ từ cả 2 nguồn
     const allData = [...parsedData, ...directInputData];
     const validTransactions = allData.filter((item) => item.isValid);
-
-    console.log("[DEBUG handleSaveAll] allData:", allData);
-    console.log("[DEBUG handleSaveAll] validTransactions:", validTransactions);
 
     if (validTransactions.length === 0) {
       alert("Không có giao dịch hợp lệ để lưu");
@@ -406,8 +363,6 @@ export const useDataTools = () => {
       // Sử dụng Batch Write để lưu nhiều document cùng lúc
       const batch = writeBatch(db);
 
-      console.log("[DEBUG handleSaveAll] currentLedger:", currentLedger);
-
       validTransactions.forEach((item) => {
         const docRef = doc(transactionsRef);
         const transactionData = {
@@ -422,18 +377,11 @@ export const useDataTools = () => {
           createdAt: serverTimestamp(),
         };
 
-        console.log(
-          "[DEBUG handleSaveAll] Saving transaction:",
-          transactionData
-        );
-
         batch.set(docRef, transactionData);
       });
 
       // Commit batch
-      console.log("[DEBUG handleSaveAll] Committing batch...");
       await batch.commit();
-      console.log("[DEBUG handleSaveAll] Batch committed successfully!");
 
       setSaveResult({
         success: true,

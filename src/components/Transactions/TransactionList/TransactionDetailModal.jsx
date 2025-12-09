@@ -39,7 +39,7 @@ const TransactionDetailModal = ({ isOpen, onOpenChange, transaction }) => {
       }}
     >
       <ModalContent>
-        {(onClose) => (
+        {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
