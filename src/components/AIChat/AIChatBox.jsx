@@ -9,9 +9,27 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  ModalFooter,
   Chip,
+  Divider,
 } from "@heroui/react";
-import { Bot, Send, X, Trash2, CheckCircle2, XCircle, Key } from "lucide-react";
+import {
+  Bot,
+  Send,
+  X,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Key,
+  HelpCircle,
+  Sparkles,
+  MessageSquare,
+  PlusCircle,
+  BarChart3,
+  FileText,
+  Clock,
+  Lightbulb,
+} from "lucide-react";
 import { useAIChat } from "./useAIChat";
 import ApiKeyModal from "./ApiKeyModal";
 import { useGeminiKey } from "../../hooks/useGeminiKey";
@@ -43,7 +61,39 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
     onOpen: onOpenApiKeyModal,
     onOpenChange: onApiKeyModalChange,
   } = useDisclosure();
+  const {
+    isOpen: isHelpOpen,
+    onOpen: onOpenHelp,
+    onOpenChange: onHelpChange,
+  } = useDisclosure();
   const [inputMessage, setInputMessage] = useState("");
+
+  /**
+   * Quick actions - gửi nhanh các câu lệnh phổ biến
+   */
+  const quickActions = [
+    {
+      label: "Thêm chi tiêu",
+      icon: PlusCircle,
+      prompt: "Thêm chi tiêu 50000 cho ăn uống hôm nay",
+    },
+    {
+      label: "Thống kê tháng",
+      icon: BarChart3,
+      prompt: "Thống kê chi tiêu tháng này",
+    },
+    {
+      label: "Tổng đã chi",
+      icon: FileText,
+      prompt: "Tôi đã chi bao nhiêu tháng này?",
+    },
+  ];
+
+  const handleQuickAction = (prompt) => {
+    if (!isLoading) {
+      handleSendMessage(prompt);
+    }
+  };
 
   /**
    * Lắng nghe event để mở ApiKeyModal
@@ -73,28 +123,37 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
     <>
       {/* Floating Action Button removed - Controlled by external SpeedDial */}
 
-      {/* Modal Chat Box */}
+      {/* Modal Chat Box - Full screen on mobile */}
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        size="2xl"
+        size="full"
         placement="center"
         scrollBehavior="inside"
         hideCloseButton
         classNames={{
-          base: "max-h-[95vh] sm:max-h-[90vh] mx-2 sm:mx-4",
+          base: "m-0 sm:m-4 sm:max-w-2xl sm:max-h-[90vh] rounded-none sm:rounded-2xl",
           body: "p-0",
+          wrapper: "sm:items-center",
         }}
       >
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  <span>Trợ lý Tài chính AI</span>
+              {/* Header với gradient */}
+              <ModalHeader className="flex items-center justify-between bg-gradient-to-r from-primary-500 via-primary-600 to-blue-600 text-white p-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">Trợ lý Tài chính AI</h2>
+                    <p className="text-xs text-white/80 font-normal">
+                      Hỏi bất cứ điều gì về tài chính
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   {hasKey && (
                     <Button
                       isIconOnly
@@ -103,6 +162,7 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
                       onPress={onOpenApiKeyModal}
                       aria-label="Quản lý API Key"
                       title="Quản lý API Key"
+                      className="text-white/80 hover:text-white hover:bg-white/20"
                     >
                       <Key className="w-4 h-4" />
                     </Button>
@@ -114,6 +174,7 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
                       variant="light"
                       onPress={handleClearChat}
                       aria-label="Xóa lịch sử chat"
+                      className="text-white/80 hover:text-white hover:bg-white/20"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -124,14 +185,15 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
                     variant="light"
                     onPress={onClose}
                     aria-label="Đóng"
+                    className="text-white/80 hover:text-white hover:bg-white/20"
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </ModalHeader>
-              <ModalBody className="p-0">
-                {/* Chat Messages */}
-                <div className="flex flex-col h-[550px] sm:h-[650px] lg:h-[700px] bg-gray-50 dark:bg-gray-900">
+              <ModalBody className="p-0 flex-1">
+                {/* Chat Messages - Full height on mobile */}
+                <div className="flex flex-col h-full min-h-[400px] sm:h-[600px] bg-gray-50 dark:bg-gray-900">
                   {!hasKey ? (
                     <div className="flex-1 flex items-center justify-center p-6">
                       <div className="text-center">
@@ -145,21 +207,51 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
                       </div>
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center p-6">
-                      <div className="text-center">
-                        <Bot className="w-16 h-16 mx-auto mb-4 text-primary-400" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                          Chào bạn! 👋
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Tôi là Trợ lý Tài chính AI của bạn. Hãy hỏi tôi bất cứ
-                          điều gì về tài chính của bạn!
-                        </p>
-                        <div className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-                          <p>💡 Ví dụ: "Thêm chi tiêu 50000 cho ăn uống"</p>
-                          <p>💡 Ví dụ: "Tôi đã chi bao nhiêu tháng này?"</p>
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-primary-50/50 to-transparent dark:from-primary-950/30">
+                      {/* AI Avatar với animation */}
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-primary-400/20 rounded-full blur-xl animate-pulse"></div>
+                        <div className="relative bg-gradient-to-br from-primary-500 to-primary-600 p-4 rounded-full shadow-lg">
+                          <Sparkles className="w-10 h-10 text-white" />
                         </div>
                       </div>
+
+                      {/* Welcome Message */}
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        Chào bạn! 👋
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 text-center max-w-md">
+                        Tôi là Trợ lý Tài chính AI của bạn. Hãy hỏi tôi bất cứ
+                        điều gì về tài chính của bạn!
+                      </p>
+
+                      {/* Quick Actions */}
+                      <div className="flex flex-wrap gap-2 justify-center mb-6">
+                        {quickActions.map((action, index) => (
+                          <Button
+                            key={index}
+                            size="sm"
+                            variant="flat"
+                            color="primary"
+                            startContent={<action.icon className="w-4 h-4" />}
+                            onPress={() => handleQuickAction(action.prompt)}
+                            className="text-xs"
+                          >
+                            {action.label}
+                          </Button>
+                        ))}
+                      </div>
+
+                      {/* Help Guide Button */}
+                      <Button
+                        variant="light"
+                        size="sm"
+                        startContent={<HelpCircle className="w-4 h-4" />}
+                        onPress={onOpenHelp}
+                        className="text-gray-500 dark:text-gray-400"
+                      >
+                        Xem hướng dẫn sử dụng AI
+                      </Button>
                     </div>
                   ) : (
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -481,6 +573,200 @@ const AIChatBox = ({ isOpen, onOpenChange }) => {
           onDeleteKey={() => setApiKey("")}
         />
       )}
+
+      {/* Help Guide Modal */}
+      <Modal
+        isOpen={isHelpOpen}
+        onOpenChange={onHelpChange}
+        size="lg"
+        placement="center"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800">
+                <Lightbulb className="w-5 h-5 text-amber-500" />
+                <span>Hướng dẫn sử dụng Trợ lý AI</span>
+              </ModalHeader>
+              <ModalBody className="py-4">
+                <div className="space-y-4">
+                  {/* Intro */}
+                  <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-950/30 dark:to-blue-950/30 p-4 rounded-xl">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      Trợ lý AI có thể giúp bạn quản lý tài chính bằng ngôn ngữ
+                      tự nhiên. Dưới đây là những gì AI có thể làm:
+                    </p>
+                  </div>
+
+                  {/* Capabilities */}
+                  <div className="space-y-3">
+                    {/* Add Transaction */}
+                    <div className="flex gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
+                      <div className="bg-emerald-500 p-2 rounded-lg">
+                        <PlusCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          Thêm giao dịch
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          "Thêm chi tiêu 50.000 cho ăn uống hôm nay"
+                          <br />
+                          "Hôm qua tôi nhận lương 15 triệu"
+                          <br />
+                          "Chi 200k cho xăng xe bằng chuyển khoản"
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Multiple Transactions */}
+                    <div className="flex gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                      <div className="bg-blue-500 p-2 rounded-lg">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          Nhập nhiều giao dịch cùng lúc
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          "Hôm nay tôi chi 50k ăn sáng, 100k đổ xăng, 200k mua
+                          đồ"
+                          <br />
+                          AI sẽ tự động tách thành nhiều giao dịch riêng biệt
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Statistics */}
+                    <div className="flex gap-3 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                      <div className="bg-purple-500 p-2 rounded-lg">
+                        <BarChart3 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          Thống kê & Phân tích
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          "Tôi đã chi bao nhiêu tháng này?"
+                          <br />
+                          "Thống kê chi tiêu theo danh mục"
+                          <br />
+                          "So sánh thu chi tuần này với tuần trước"
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Time Expressions */}
+                    <div className="flex gap-3 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
+                      <div className="bg-amber-500 p-2 rounded-lg">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          Hiểu thời gian tương đối
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          AI hiểu: "hôm nay", "hôm qua", "tuần trước", "tháng
+                          này", "ngày 15", "thứ 2 vừa rồi"...
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Q&A */}
+                    <div className="flex gap-3 p-3 bg-rose-50 dark:bg-rose-950/20 rounded-lg">
+                      <div className="bg-rose-500 p-2 rounded-lg">
+                        <MessageSquare className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          Hỏi đáp tự do
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          "Tôi có đang chi tiêu vượt mức không?"
+                          <br />
+                          "Danh mục nào tốn nhiều tiền nhất?"
+                          <br />
+                          "Gợi ý cách tiết kiệm?"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tips */}
+                  <Divider />
+                  <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                    <p className="font-medium text-gray-700 dark:text-gray-300">
+                      💡 Mẹo sử dụng:
+                    </p>
+                    <p>• Nói càng chi tiết, AI hiểu càng chính xác</p>
+                    <p>• AI sẽ luôn xác nhận trước khi lưu giao dịch</p>
+                    <p>• Có thể nhập nhiều dòng bằng Shift+Enter</p>
+                  </div>
+
+                  {/* API Quota Explanation */}
+                  <Divider />
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-amber-500 p-2 rounded-lg flex-shrink-0">
+                        <HelpCircle className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h4 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">
+                          ⚡ Giới hạn sử dụng API (Quota)
+                        </h4>
+                        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                          AI này sử dụng <strong>Google Gemini API</strong> (gói
+                          miễn phí). Bạn có <strong>giới hạn số lần hỏi</strong>{" "}
+                          mỗi ngày:
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2 text-center">
+                            <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                              10
+                            </p>
+                            <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                              lần/phút
+                            </p>
+                          </div>
+                          <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2 text-center">
+                            <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                              ~1500
+                            </p>
+                            <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                              lần/ngày
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed mt-2">
+                          <strong>Mẹo tiết kiệm:</strong>
+                        </p>
+                        <ul className="text-[11px] text-amber-600 dark:text-amber-400 space-y-1 list-disc list-inside">
+                          <li>
+                            Gộp nhiều giao dịch vào 1 tin nhắn thay vì gửi riêng
+                            lẻ
+                          </li>
+                          <li>Chờ AI trả lời xong mới gửi câu tiếp theo</li>
+                          <li>Tránh spam gửi liên tục</li>
+                        </ul>
+                        <p className="text-[10px] text-amber-500 dark:text-amber-500 mt-2">
+                          Nếu vượt giới hạn, bạn cần đợi 1 phút hoặc đến ngày
+                          hôm sau.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onPress={onClose}>
+                  Đã hiểu
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </>
   );
 };

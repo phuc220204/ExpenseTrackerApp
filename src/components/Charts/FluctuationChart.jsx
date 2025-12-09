@@ -18,13 +18,23 @@ import {
 } from "date-fns";
 import { vi } from "date-fns/locale";
 
-// Format tiền VND
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    notation: "compact",
-  }).format(value);
+// Format tiền VND - không dùng style:currency để tránh hiển thị "đ"
+const formatCurrency = (value) => {
+  if (value >= 1000000000) {
+    return (value / 1000000000).toFixed(1) + " tỷ";
+  }
+  if (value >= 1000000) {
+    return (value / 1000000).toFixed(1) + " tr";
+  }
+  if (value >= 1000) {
+    return (value / 1000).toFixed(0) + " N";
+  }
+  return new Intl.NumberFormat("vi-VN").format(value) + " VND";
+};
+
+// Format tiền VND đầy đủ cho tooltip
+const formatFullCurrency = (value) =>
+  new Intl.NumberFormat("vi-VN").format(value) + " VND";
 
 /**
  * Custom Tooltip Component - Định nghĩa bên ngoài để tránh re-render
@@ -41,15 +51,19 @@ const CustomTooltipContent = ({ active, payload, label, viewMode }) => {
           {viewMode === "daily" ? `Ngày ${label}` : label}
         </p>
         <div className="space-y-1 text-sm">
-          <p className="text-green-600">Thu nhập: {formatCurrency(income)}</p>
-          <p className="text-red-500">Chi tiêu: {formatCurrency(expense)}</p>
+          <p className="text-green-600">
+            Thu nhập: {formatFullCurrency(income)}
+          </p>
+          <p className="text-red-500">
+            Chi tiêu: {formatFullCurrency(expense)}
+          </p>
           <hr className="border-slate-200 dark:border-slate-600 my-1" />
           <p
             className={`font-semibold ${
               balance >= 0 ? "text-blue-600" : "text-orange-500"
             }`}
           >
-            Còn lại: {formatCurrency(balance)}
+            Còn lại: {formatFullCurrency(balance)}
           </p>
         </div>
       </div>

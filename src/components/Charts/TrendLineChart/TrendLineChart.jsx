@@ -10,15 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import {
-  parseISO,
-  getWeek,
-  startOfMonth,
-  endOfMonth,
-  isSameMonth,
-  subMonths,
-  format,
-} from "date-fns";
+import { parseISO, startOfMonth, isSameMonth, subMonths } from "date-fns";
 import { useTransactionsContext } from "../../../contexts/TransactionsContext";
 
 const TrendLineChart = () => {
@@ -30,7 +22,7 @@ const TrendLineChart = () => {
     const lastMonthStart = startOfMonth(subMonths(today, 1));
 
     // Helper để nhóm giao dịch theo tuần trong tháng (Tuần 1, 2, 3, 4)
-    const groupByWeek = (txs, monthStart) => {
+    const groupByWeek = (txs) => {
       const weeks = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
       txs.forEach((t) => {
@@ -101,16 +93,15 @@ const TrendLineChart = () => {
             />
             <Tooltip
               formatter={(value) =>
-                new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(value)
+                new Intl.NumberFormat("vi-VN").format(value) + " VND"
               }
               contentStyle={{
                 borderRadius: "8px",
                 border: "none",
                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                backgroundColor: "white",
               }}
+              labelStyle={{ fontWeight: "600", marginBottom: "4px" }}
             />
             <Legend verticalAlign="top" height={36} iconType="circle" />
             <Line

@@ -163,6 +163,19 @@ const TransactionDetailModal = ({ isOpen, onOpenChange, transaction }) => {
                       </div>
                     </>
                   )}
+
+                  {/* ID giao dịch - hiển thị để hỗ trợ xóa qua AI */}
+                  <Divider />
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      ID:
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono text-gray-700 dark:text-gray-300">
+                        {transaction.id}
+                      </code>
+                    </div>
+                  </div>
                 </CardBody>
               </Card>
             </ModalBody>
@@ -174,4 +187,3 @@ const TransactionDetailModal = ({ isOpen, onOpenChange, transaction }) => {
 };
 
 export default TransactionDetailModal;
-

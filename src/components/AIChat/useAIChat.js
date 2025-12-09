@@ -1,13 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { processUserMessage } from "../../services/gemini";
 import { useGeminiKey } from "../../hooks/useGeminiKey";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTransactionsContext } from "../../contexts/TransactionsContext";
 import * as functionHandlers from "../../services/geminiFunctionHandlers";
 
+// Constants cho rate limiting
+const MIN_REQUEST_INTERVAL = 2000; // 2 giây giữa các request
+const MAX_REQUESTS_PER_MINUTE = 10; // Tối đa 10 requests/phút
+
 /**
  * Hook xử lý logic cho AIChatBox
  * Quản lý chat history, xử lý tin nhắn, và tương tác với AI
+ * Có rate limiting để tránh spam API
  *
  * @returns {Object} Object chứa state và handlers
  */
@@ -21,6 +26,10 @@ export const useAIChat = () => {
   const [previewTransaction, setPreviewTransaction] = useState(null);
   const [previewTransactions, setPreviewTransactions] = useState([]); // Hỗ trợ nhiều transactions
   const messagesEndRef = useRef(null);
+
+  // Rate limiting refs
+  const lastRequestTimeRef = useRef(0);
+  const requestCountRef = useRef([]);
 
   /**
    * Scroll xuống cuối chat khi có tin nhắn mới
@@ -48,6 +57,46 @@ export const useAIChat = () => {
   };
 
   /**
+   * Kiểm tra rate limit
+   * @returns {Object} { allowed: boolean, waitTime: number, message: string }
+   */
+
+  const checkRateLimit = useCallback(() => {
+    const now = Date.now();
+
+    // Kiểm tra khoảng cách giữa 2 request
+    const timeSinceLastRequest = now - lastRequestTimeRef.current;
+    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+      const waitTime = Math.ceil(
+        (MIN_REQUEST_INTERVAL - timeSinceLastRequest) / 1000
+      );
+      return {
+        allowed: false,
+        waitTime,
+        message: `Vui lòng đợi ${waitTime} giây trước khi gửi tin nhắn tiếp.`,
+      };
+    }
+
+    // Kiểm tra số request trong 1 phút
+    const oneMinuteAgo = now - 60000;
+    requestCountRef.current = requestCountRef.current.filter(
+      (time) => time > oneMinuteAgo
+    );
+
+    if (requestCountRef.current.length >= MAX_REQUESTS_PER_MINUTE) {
+      const oldestRequest = requestCountRef.current[0];
+      const waitTime = Math.ceil((oldestRequest + 60000 - now) / 1000);
+      return {
+        allowed: false,
+        waitTime,
+        message: `Bạn đã gửi quá nhiều tin nhắn. Vui lòng đợi ${waitTime} giây.`,
+      };
+    }
+
+    return { allowed: true, waitTime: 0, message: "" };
+  }, []);
+
+  /**
    * Xử lý khi người dùng gửi tin nhắn
    * Sử dụng Function Calling để AI có thể gọi trực tiếp các hàm trong hệ thống
    *
@@ -55,6 +104,19 @@ export const useAIChat = () => {
    */
   const handleSendMessage = async (userMessage) => {
     if (!userMessage.trim() || !hasKey || !currentUser) return;
+    if (isLoading) return; // Chặn gửi khi đang loading
+
+    // Kiểm tra rate limit
+    const rateLimitCheck = checkRateLimit();
+    if (!rateLimitCheck.allowed) {
+      addMessage("assistant", `⏳ ${rateLimitCheck.message}`);
+      return;
+    }
+
+    // Cập nhật rate limit tracking
+    const now = Date.now();
+    lastRequestTimeRef.current = now;
+    requestCountRef.current.push(now);
 
     // Thêm tin nhắn người dùng vào chat
     addMessage("user", userMessage);
@@ -69,8 +131,8 @@ export const useAIChat = () => {
         deleteTransaction: deleteTransaction,
       };
 
-      // Giới hạn chat history để giảm token (chỉ giữ 8 messages gần nhất)
-      const MAX_HISTORY = 8;
+      // Giới hạn chat history để giảm token (chỉ giữ 4 messages gần nhất)
+      const MAX_HISTORY = 4;
       const limitedHistory =
         messages.length > MAX_HISTORY ? messages.slice(-MAX_HISTORY) : messages;
 

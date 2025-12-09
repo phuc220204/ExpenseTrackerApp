@@ -5,6 +5,7 @@ import { useTransactionsContext } from "../../contexts/TransactionsContext";
 import { useBudgetContext } from "../../contexts/BudgetContext";
 import BudgetCard from "../../components/Budget/BudgetCard";
 import CreateBudgetModal from "../../components/Budget/CreateBudgetModal";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 /**
  * Tab Quản lý ngân sách (Budget)
@@ -103,10 +104,7 @@ const BudgetTab = () => {
             <div className="text-right">
               <p className="text-sm text-blue-100">Còn lại</p>
               <p className="text-2xl font-bold">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(
+                {formatCurrency(
                   Math.max(
                     0,
                     totalBudgetInfo.totalLimit - totalBudgetInfo.totalSpent
@@ -118,19 +116,9 @@ const BudgetTab = () => {
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
+              <span>Đã chi: {formatCurrency(totalBudgetInfo.totalSpent)}</span>
               <span>
-                Đã chi:{" "}
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(totalBudgetInfo.totalSpent)}
-              </span>
-              <span>
-                Tổng hạn mức:{" "}
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(totalBudgetInfo.totalLimit)}
+                Tổng hạn mức: {formatCurrency(totalBudgetInfo.totalLimit)}
               </span>
             </div>
             <Progress

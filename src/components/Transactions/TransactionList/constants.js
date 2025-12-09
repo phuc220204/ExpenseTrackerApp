@@ -30,7 +30,6 @@ import {
 } from "lucide-react";
 import {
   getCategoryIcon,
-  getSubcategoryIcon,
   findCategoryFromSubcategory,
 } from "../../AddTransactionModal/categoryStructure";
 
@@ -48,10 +47,10 @@ export const CATEGORY_ICON_MAP = {
   "Giáo dục": GraduationCap,
   "Tiết kiệm/Đầu tư": PiggyBank,
   "Thu nhập": Wallet,
-  "Lương": Wallet,
-  "Freelance": Briefcase,
-  "Thưởng": Gift,
-  "Khác": MoreHorizontal,
+  Lương: Wallet,
+  Freelance: Briefcase,
+  Thưởng: Gift,
+  Khác: MoreHorizontal,
 };
 
 /**
@@ -62,54 +61,54 @@ export const SUBCATEGORY_ICON_MAP = {
   // Ăn uống
   "Đi chợ/Tạp hóa": ShoppingCart,
   "Nhà hàng": Utensils,
-  "Cafe": Coffee,
+  Cafe: Coffee,
   "Đồ uống": Coffee,
-  
+
   // Di chuyển
   "Sửa xe/Bảo dưỡng": Wrench,
   "Xăng/Dầu": Fuel,
   "Taxi/Xe công nghệ": Navigation,
   "Gửi xe": Car,
   "Phí cầu đường": Car,
-  
+
   // Mua sắm
   "Quần áo": ShoppingBag,
   "Điện tử": ShoppingBag,
   "Đồ gia dụng": Home,
   "Mỹ phẩm": ShoppingBag,
-  
+
   // Hóa đơn
-  "Điện": Zap,
-  "Nước": Droplets,
-  "Internet": Phone,
+  Điện: Zap,
+  Nước: Droplets,
+  Internet: Phone,
   "Điện thoại": Phone,
   "Bảo hiểm": FileText,
-  
+
   // Giải trí
   "Xem phim": Film,
   "Chơi game": Gamepad2,
   "Du lịch": Car,
   "Thể thao": Gamepad2,
-  
+
   // Y tế
   "Khám bệnh": Stethoscope,
-  "Thuốc": Pill,
+  Thuốc: Pill,
   "Bảo hiểm y tế": Heart,
-  
+
   // Giáo dục
   "Học phí": GraduationCap,
   "Sách vở": BookOpen,
   "Khóa học": BookOpen,
-  
+
   // Tiết kiệm/Đầu tư
   "Tiết kiệm": PiggyBank,
   "Đầu tư": TrendingUp,
   "Chứng khoán": TrendingUp,
-  
+
   // Thu nhập
-  "Lương": Briefcase,
-  "Freelance": Briefcase,
-  "Thưởng": Gift,
+  Lương: Briefcase,
+  Freelance: Briefcase,
+  Thưởng: Gift,
 };
 
 /**
@@ -123,19 +122,19 @@ export const getIconForCategory = (category, type = "expense") => {
   if (SUBCATEGORY_ICON_MAP[category]) {
     return SUBCATEGORY_ICON_MAP[category];
   }
-  
+
   // Thử tìm trong category map
   if (CATEGORY_ICON_MAP[category]) {
     return CATEGORY_ICON_MAP[category];
   }
-  
+
   // Thử tìm category chính từ subcategory
   const mainCategory = findCategoryFromSubcategory(type, category);
   if (mainCategory) {
     const icon = getCategoryIcon(type, mainCategory);
     if (icon) return icon;
   }
-  
+
   // Trả về icon mặc định
   return DEFAULT_ICON;
 };
@@ -145,4 +144,3 @@ export const getIconForCategory = (category, type = "expense") => {
  * @type {React.ComponentType}
  */
 export const DEFAULT_ICON = MoreHorizontal;
-

@@ -222,6 +222,81 @@ const useTransactions = () => {
     }
   };
 
+  /**
+   * Cập nhật tên ledger (sổ thu chi)
+   * Cho phép đổi tên tất cả các sổ (bao gồm cả Sổ Chính)
+   * @param {string} ledgerId - ID của ledger cần cập nhật
+   * @param {string} newName - Tên mới của ledger
+   */
+  const updateLedger = async (ledgerId, newName) => {
+    if (!currentUser || !newName.trim()) return;
+
+    const updatedLedgers = ledgers.map((l) =>
+      l.id === ledgerId ? { ...l, name: newName.trim() } : l
+    );
+
+    try {
+      const settingsRef = doc(
+        db,
+        "users",
+        currentUser.uid,
+        "settings",
+        "appSettings"
+      );
+      await setDoc(settingsRef, { ledgers: updatedLedgers }, { merge: true });
+      setLedgers(updatedLedgers);
+
+      // Cập nhật currentLedger nếu đang chọn ledger này
+      if (currentLedger.id === ledgerId) {
+        setCurrentLedger({ ...currentLedger, name: newName.trim() });
+      }
+    } catch (e) {
+      console.error("Error updating ledger", e);
+      throw e;
+    }
+  };
+
+  /**
+   * Xóa ledger (sổ thu chi)
+   * Cho phép xóa bất kỳ sổ nào miễn là còn ít nhất 1 sổ
+   * @param {string} ledgerId - ID của ledger cần xóa
+   */
+  const deleteLedger = async (ledgerId) => {
+    if (!currentUser) return;
+
+    // Phải giữ ít nhất 1 ledger
+    if (ledgers.length <= 1) {
+      throw new Error(
+        "Phải có ít nhất một sổ thu chi. Không thể xóa sổ duy nhất."
+      );
+    }
+
+    const updatedLedgers = ledgers.filter((l) => l.id !== ledgerId);
+
+    try {
+      const settingsRef = doc(
+        db,
+        "users",
+        currentUser.uid,
+        "settings",
+        "appSettings"
+      );
+      await setDoc(settingsRef, { ledgers: updatedLedgers }, { merge: true });
+      setLedgers(updatedLedgers);
+
+      // Nếu đang chọn ledger bị xóa, chuyển về sổ chính
+      if (currentLedger.id === ledgerId) {
+        const mainLedger =
+          updatedLedgers.find((l) => l.id === "main") || updatedLedgers[0];
+        setCurrentLedger(mainLedger);
+        localStorage.setItem("currentLedgerId", mainLedger.id);
+      }
+    } catch (e) {
+      console.error("Error deleting ledger", e);
+      throw e;
+    }
+  };
+
   // ... (Keep update and delete transaction as is, but ensure they don't break)
   // Reuse existing update/delete logic since they rely on doc ID which is unique regardless of ledger
 
@@ -318,6 +393,8 @@ const useTransactions = () => {
     currentLedger,
     switchLedger,
     addLedger,
+    updateLedger,
+    deleteLedger,
   };
 };
 

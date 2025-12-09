@@ -26,7 +26,6 @@ import {
   SAMPLE_EXCEL_FILENAME,
   EXPORT_EXCEL_FILENAME,
 } from "./constants";
-import { parseAmountInput } from "../../utils/formatCurrency";
 import { exportToPDF } from "../../utils/exportUtils";
 
 /**
@@ -37,7 +36,8 @@ import { exportToPDF } from "../../utils/exportUtils";
  */
 export const useDataTools = () => {
   const { currentUser } = useAuth();
-  const { transactions } = useTransactionsContext();
+  const { transactions, currentLedger } = useTransactionsContext();
+
   const [rawData, setRawData] = useState("");
   const [parsedData, setParsedData] = useState([]);
   const [directInputData, setDirectInputData] = useState([]); // Dữ liệu nhập trực tiếp vào bảng
@@ -193,102 +193,68 @@ export const useDataTools = () => {
   };
 
   /**
-   * Cập nhật một transaction trong preview
+   * Cập nhật một transaction trong preview (từ paste Excel)
+   * Validate TẤT CẢ các field bắt buộc sau mỗi update
    *
    * @param {string} id - ID của transaction cần cập nhật
    * @param {Object} updates - Object chứa các field cần cập nhật
    */
   const updateParsedItem = (id, updates) => {
+    console.log("[DEBUG updateParsedItem] Called with:", { id, updates });
+
     setParsedData((prev) =>
       prev.map((item) => {
         if (item.id === id) {
+          console.log("[DEBUG updateParsedItem] Found item:", item);
           const updated = { ...item, ...updates };
-          // Re-validate sau khi cập nhật - chỉ validate các field được update
           const errors = [];
 
-          // Chỉ validate date nếu date được update
-          if (updates.date !== undefined) {
-            if (!parseDate(updated.date)) {
-              errors.push("Ngày không hợp lệ");
-            }
-          } else {
-            // Nếu date không được update, giữ nguyên validation cũ
-            if (item.errors && item.errors.includes("Ngày không hợp lệ")) {
-              if (!parseDate(updated.date)) {
-                errors.push("Ngày không hợp lệ");
-              }
-            }
+          // === VALIDATE DATE ===
+          const dateValid = parseDate(updated.date);
+          console.log("[DEBUG updateParsedItem] Date validation:", {
+            date: updated.date,
+            dateValid,
+          });
+          if (!dateValid) {
+            errors.push("Ngày không hợp lệ");
           }
 
-          // Parse amount - có thể là string đã format hoặc number
-          if (updates.amount !== undefined) {
-            if (typeof updates.amount === "string") {
-              // Loại bỏ dấu chấm/phẩy từ formatted string
-              const parsed = parseAmountInput(updates.amount);
-              if (!parsed || parsed <= 0) {
-                errors.push("Số tiền không hợp lệ");
-                updated.amount = "";
-              } else {
-                updated.amount = parsed;
-              }
-            } else if (typeof updates.amount === "number") {
-              // Nếu đã là number, chỉ cần validate
-              if (!updated.amount || updated.amount <= 0) {
-                errors.push("Số tiền không hợp lệ");
-              }
-            } else {
-              // Trường hợp khác (null, undefined, empty string)
-              if (
-                updates.amount === "" ||
-                updates.amount === null ||
-                updates.amount === undefined
-              ) {
-                updated.amount = "";
-                errors.push("Số tiền không hợp lệ");
-              }
-            }
-          } else {
-            // Nếu amount không được update, giữ nguyên validation cũ
-            if (item.errors && item.errors.some((e) => e.includes("Số tiền"))) {
-              if (!parseAmount(updated.amount?.toString())) {
-                errors.push("Số tiền không hợp lệ");
-              }
-            }
+          // === VALIDATE AMOUNT ===
+          let numericAmount = 0;
+          if (typeof updated.amount === "number") {
+            numericAmount = updated.amount;
+          } else if (updated.amount) {
+            // Parse từ string (có thể có dấu chấm phân cách)
+            const cleaned = String(updated.amount).replace(/[^\d]/g, "");
+            numericAmount = parseInt(cleaned, 10) || 0;
           }
-          // Validate type - chỉ validate nếu có giá trị và không đúng
-          if (updates.type !== undefined) {
-            // Chấp nhận cả "income"/"expense" (từ Select)
-            if (updates.type !== "income" && updates.type !== "expense") {
-              errors.push("Loại phải là 'Thu' hoặc 'Chi'");
-              updated.type = DEFAULT_TYPE;
-            }
+          console.log("[DEBUG updateParsedItem] Amount validation:", {
+            originalAmount: updated.amount,
+            numericAmount,
+            type: typeof updated.amount,
+          });
+
+          if (numericAmount <= 0) {
+            errors.push("Số tiền không hợp lệ");
           } else {
-            // Nếu type không được update, giữ nguyên validation cũ
-            if (item.errors && item.errors.some((e) => e.includes("Loại"))) {
-              if (
-                updated.type &&
-                updated.type !== "income" &&
-                updated.type !== "expense"
-              ) {
-                errors.push("Loại phải là 'Thu' hoặc 'Chi'");
-              }
-            }
-          }
-          // Xử lý category: nếu để trống, mặc định là "Khác"
-          if (updates.category !== undefined) {
-            if (!updates.category || updates.category.trim() === "") {
-              updated.category = "Khác";
-            }
+            updated.amount = numericAmount; // Lưu dạng số
           }
 
-          // Nếu chỉ update note, giữ nguyên errors cũ (trừ khi có lỗi mới)
-          if (Object.keys(updates).length === 1 && updates.note !== undefined) {
-            updated.errors = item.errors || [];
-            updated.isValid = item.isValid !== false;
-          } else {
-            updated.errors = errors;
-            updated.isValid = errors.length === 0;
+          // === XỬ LÝ CATEGORY ===
+          if (!updated.category || updated.category.trim() === "") {
+            updated.category = "Khác";
           }
+
+          // === SET VALIDATION RESULT ===
+          updated.errors = errors;
+          updated.isValid = errors.length === 0;
+
+          console.log("[DEBUG updateParsedItem] Result:", {
+            errors,
+            isValid: updated.isValid,
+            updated,
+          });
+
           return updated;
         }
         return item;
@@ -327,92 +293,62 @@ export const useDataTools = () => {
 
   /**
    * Cập nhật một dòng trong bảng nhập trực tiếp
+   * Validate TẤT CẢ các field bắt buộc sau mỗi update
    *
    * @param {string} id - ID của transaction cần cập nhật
    * @param {Object} updates - Object chứa các field cần cập nhật
    */
   const updateDirectInputItem = (id, updates) => {
+    console.log("[DEBUG updateDirectInputItem] Called with:", { id, updates });
+
     setDirectInputData((prev) =>
       prev.map((item) => {
         if (item.id === id) {
+          console.log("[DEBUG updateDirectInputItem] Found item:", item);
           const updated = { ...item, ...updates };
-
-          // Nếu chỉ update note, không cần re-validate
-          if (Object.keys(updates).length === 1 && updates.note !== undefined) {
-            return updated; // Giữ nguyên errors và isValid
-          }
-
-          // Re-validate sau khi cập nhật - chỉ validate các field được update
           const errors = [];
 
-          // Chỉ validate date nếu date được update
-          if (updates.date !== undefined) {
-            if (!parseDate(updated.date)) {
-              errors.push("Ngày không hợp lệ");
-            }
-          } else {
-            // Nếu date không được update, giữ nguyên validation cũ
-            if (item.errors && item.errors.includes("Ngày không hợp lệ")) {
-              if (!parseDate(updated.date)) {
-                errors.push("Ngày không hợp lệ");
-              }
-            }
+          // === VALIDATE DATE ===
+          const dateValid = parseDate(updated.date);
+          console.log("[DEBUG updateDirectInputItem] Date validation:", {
+            date: updated.date,
+            dateValid,
+          });
+          if (!dateValid) {
+            errors.push("Ngày không hợp lệ");
           }
 
-          // Parse amount - chỉ validate nếu amount được update
-          let cleanedAmount = null;
-          if (updates.amount !== undefined) {
-            const amountStr = updated.amount?.toString() || "";
-            cleanedAmount = amountStr.replace(/[^\d]/g, ""); // Loại bỏ dấu phẩy/chấm
-            if (!cleanedAmount || !parseAmount(cleanedAmount)) {
-              errors.push("Số tiền không hợp lệ");
-            }
+          // === VALIDATE AMOUNT ===
+          let numericAmount = 0;
+          if (typeof updated.amount === "number") {
+            numericAmount = updated.amount;
+          } else if (updated.amount) {
+            // Parse từ string (có thể có dấu chấm phân cách)
+            const cleaned = String(updated.amount).replace(/[^\d]/g, "");
+            numericAmount = parseInt(cleaned, 10) || 0;
+          }
+          console.log("[DEBUG updateDirectInputItem] Amount validation:", {
+            originalAmount: updated.amount,
+            numericAmount,
+            type: typeof updated.amount,
+          });
+
+          if (numericAmount <= 0) {
+            errors.push("Số tiền không hợp lệ");
           } else {
-            // Nếu amount không được update, giữ nguyên validation cũ
-            if (item.errors && item.errors.some((e) => e.includes("Số tiền"))) {
-              const amountStr = updated.amount?.toString() || "";
-              cleanedAmount = amountStr.replace(/[^\d]/g, "");
-              if (!cleanedAmount || !parseAmount(cleanedAmount)) {
-                errors.push("Số tiền không hợp lệ");
-              }
-            } else {
-              // Nếu không có lỗi, vẫn cần parse amount để lưu
-              const amountStr = updated.amount?.toString() || "";
-              cleanedAmount = amountStr.replace(/[^\d]/g, "");
-            }
+            updated.amount = numericAmount; // Lưu dạng số
           }
 
-          // Validate type - chỉ validate nếu type được update
-          if (updates.type !== undefined) {
-            if (
-              updated.type &&
-              updated.type !== "income" &&
-              updated.type !== "expense"
-            ) {
-              errors.push("Loại phải là 'Thu' hoặc 'Chi'");
-            }
-          } else {
-            // Nếu type không được update, giữ nguyên validation cũ
-            if (item.errors && item.errors.some((e) => e.includes("Loại"))) {
-              if (
-                updated.type &&
-                updated.type !== "income" &&
-                updated.type !== "expense"
-              ) {
-                errors.push("Loại phải là 'Thu' hoặc 'Chi'");
-              }
-            }
-          }
-
+          // === SET VALIDATION RESULT ===
           updated.errors = errors;
           updated.isValid = errors.length === 0;
-          // Lưu amount dạng số (đã parse) để dễ xử lý - chỉ khi có giá trị hợp lệ
-          if (cleanedAmount && parseAmount(cleanedAmount)) {
-            updated.amount = parseAmount(cleanedAmount);
-          } else if (!cleanedAmount || cleanedAmount === "") {
-            // Nếu không có giá trị, giữ nguyên (có thể là đang nhập)
-            updated.amount = updated.amount || "";
-          }
+
+          console.log("[DEBUG updateDirectInputItem] Result:", {
+            errors,
+            isValid: updated.isValid,
+            updated,
+          });
+
           return updated;
         }
         return item;
@@ -435,6 +371,10 @@ export const useDataTools = () => {
    * Merge cả dữ liệu từ paste và nhập trực tiếp
    */
   const handleSaveAll = async () => {
+    console.log("[DEBUG handleSaveAll] Called");
+    console.log("[DEBUG handleSaveAll] parsedData:", parsedData);
+    console.log("[DEBUG handleSaveAll] directInputData:", directInputData);
+
     if (!currentUser) {
       alert("Vui lòng đăng nhập để lưu dữ liệu");
       return;
@@ -443,6 +383,9 @@ export const useDataTools = () => {
     // Merge và lọc chỉ lấy các transaction hợp lệ từ cả 2 nguồn
     const allData = [...parsedData, ...directInputData];
     const validTransactions = allData.filter((item) => item.isValid);
+
+    console.log("[DEBUG handleSaveAll] allData:", allData);
+    console.log("[DEBUG handleSaveAll] validTransactions:", validTransactions);
 
     if (validTransactions.length === 0) {
       alert("Không có giao dịch hợp lệ để lưu");
@@ -463,10 +406,13 @@ export const useDataTools = () => {
       // Sử dụng Batch Write để lưu nhiều document cùng lúc
       const batch = writeBatch(db);
 
+      console.log("[DEBUG handleSaveAll] currentLedger:", currentLedger);
+
       validTransactions.forEach((item) => {
         const docRef = doc(transactionsRef);
         const transactionData = {
           userId: currentUser.uid,
+          ledgerId: currentLedger?.id || "main", // Thêm ledgerId để phân biệt sổ thu chi
           date: item.date,
           type: item.type,
           category: item.category,
@@ -476,11 +422,18 @@ export const useDataTools = () => {
           createdAt: serverTimestamp(),
         };
 
+        console.log(
+          "[DEBUG handleSaveAll] Saving transaction:",
+          transactionData
+        );
+
         batch.set(docRef, transactionData);
       });
 
       // Commit batch
+      console.log("[DEBUG handleSaveAll] Committing batch...");
       await batch.commit();
+      console.log("[DEBUG handleSaveAll] Batch committed successfully!");
 
       setSaveResult({
         success: true,
@@ -493,7 +446,7 @@ export const useDataTools = () => {
       setParsedData([]);
       setDirectInputData([]);
     } catch (error) {
-      console.error("Lỗi khi lưu dữ liệu:", error);
+      console.error("[DEBUG handleSaveAll] ERROR:", error);
       setSaveResult({
         success: false,
         error: error.message || "Có lỗi xảy ra khi lưu dữ liệu",

@@ -1,3 +1,4 @@
+import React, { useMemo } from "react";
 import {
   Card,
   CardBody,
@@ -10,13 +11,18 @@ import {
 } from "@heroui/react";
 import { MoreVertical, Edit2, Trash2, AlertTriangle } from "lucide-react";
 import { getIconForCategory } from "../Transactions/TransactionList/constants";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 /**
  * Component hiển thị thông tin ngân sách của một danh mục
  */
 const BudgetCard = ({ budget, spentAmount, onEdit, onDelete }) => {
   const { category, limit } = budget;
-  const CategoryIcon = getIconForCategory(category, "expense");
+  // Lưu icon component reference - dùng createElement để tránh lint warning
+  const categoryIcon = useMemo(
+    () => getIconForCategory(category, "expense"),
+    [category]
+  );
 
   // Tính toán phần trăm đã chi
   const percentage = Math.min((spentAmount / limit) * 100, 100);
@@ -41,7 +47,7 @@ const BudgetCard = ({ budget, spentAmount, onEdit, onDelete }) => {
                   : "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
               }`}
             >
-              <CategoryIcon className="w-5 h-5" />
+              {React.createElement(categoryIcon, { className: "w-5 h-5" })}
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -87,19 +93,13 @@ const BudgetCard = ({ budget, spentAmount, onEdit, onDelete }) => {
                 isOverLimit ? "text-red-600" : "text-gray-900 dark:text-white"
               }`}
             >
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(spentAmount)}
+              {formatCurrency(spentAmount)}
             </span>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500 mb-1">Hạn mức</span>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(limit)}
+              {formatCurrency(limit)}
             </span>
           </div>
         </div>
@@ -117,19 +117,11 @@ const BudgetCard = ({ budget, spentAmount, onEdit, onDelete }) => {
           {isOverLimit ? (
             <span className="text-red-600 font-medium flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
-              Đã vượt quá{" "}
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(Math.abs(remaining))}
+              Đã vượt quá {formatCurrency(Math.abs(remaining))}
             </span>
           ) : (
             <span className="text-gray-500">
-              Còn lại{" "}
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(remaining)}
+              Còn lại {formatCurrency(remaining)}
             </span>
           )}
         </div>

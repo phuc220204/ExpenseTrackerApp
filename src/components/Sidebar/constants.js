@@ -28,7 +28,7 @@ export const MENU_ITEMS = [
   },
   {
     path: "/data-tools",
-    label: "Công cụ Dữ liệu",
+    label: "Công cụ",
     icon: Database,
   },
 ];

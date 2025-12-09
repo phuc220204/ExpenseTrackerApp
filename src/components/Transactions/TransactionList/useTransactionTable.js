@@ -4,7 +4,7 @@ import { format, parseISO } from "date-fns";
 /**
  * Hook xử lý logic cho TransactionTable component
  * Quản lý phân trang và sắp xếp dữ liệu
- * 
+ *
  * @param {Array} transactions - Mảng tất cả các giao dịch
  * @returns {Object} Object chứa dữ liệu đã xử lý và state phân trang
  * @returns {Array} returns.sortedTransactions - Mảng transactions đã được sắp xếp
@@ -36,12 +36,12 @@ export const useTransactionTable = (transactions) => {
         return dateB - dateA;
       });
     }
-    
+
     const sorted = [...transactions];
-    
+
     sorted.sort((a, b) => {
       let comparison = 0;
-      
+
       if (sortDescriptor.column === "date") {
         const dateA = parseISO(a.date);
         const dateB = parseISO(b.date);
@@ -53,15 +53,15 @@ export const useTransactionTable = (transactions) => {
         // "income" < "expense" trong string comparison
         comparison = a.type.localeCompare(b.type);
       }
-      
+
       // Đảo ngược nếu direction là descending
       if (sortDescriptor.direction === "descending") {
         comparison = -comparison;
       }
-      
+
       return comparison;
     });
-    
+
     return sorted;
   }, [transactions, sortDescriptor]);
 
@@ -87,7 +87,7 @@ export const useTransactionTable = (transactions) => {
    */
   useEffect(() => {
     if (page > totalPages && totalPages > 0) {
-      setPage(1);
+      queueMicrotask(() => setPage(1));
     }
   }, [totalPages, page]);
 
@@ -110,4 +110,3 @@ export const useTransactionTable = (transactions) => {
 export const formatTableDate = (dateString) => {
   return format(parseISO(dateString), "dd/MM/yyyy");
 };
-

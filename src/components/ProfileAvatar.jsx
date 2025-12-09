@@ -44,29 +44,37 @@ const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
     >
       <DropdownTrigger>
         <button
-          className={`flex items-center gap-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
+          className={`flex items-center gap-3 rounded-lg transition-colors ${
             isMobile
-              ? "flex-col justify-center h-full px-2 py-1"
-              : "px-3 py-2 w-full"
+              ? "flex-col justify-center h-full group"
+              : "px-3 py-2 w-full hover:bg-gray-100 dark:hover:bg-gray-800"
           }`}
           aria-label="Tài khoản"
         >
-          {photoURL ? (
-            <Avatar
-              src={photoURL}
-              alt={displayName}
-              size="sm"
-              className={isMobile ? "w-6 h-6" : "w-8 h-8"}
-            />
-          ) : (
-            <div
-              className={`rounded-full bg-primary-500 flex items-center justify-center text-white font-medium ${
-                isMobile ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm"
-              }`}
-            >
-              {initials}
-            </div>
-          )}
+          <div
+            className={
+              isMobile
+                ? "p-1.5 rounded-xl group-hover:bg-gray-100 dark:group-hover:bg-gray-800 transition-all"
+                : ""
+            }
+          >
+            {photoURL ? (
+              <Avatar
+                src={photoURL}
+                alt={displayName}
+                size="sm"
+                className={isMobile ? "w-5 h-5" : "w-8 h-8"}
+              />
+            ) : (
+              <div
+                className={`rounded-full bg-primary-500 flex items-center justify-center text-white font-medium ${
+                  isMobile ? "w-5 h-5 text-[10px]" : "w-8 h-8 text-sm"
+                }`}
+              >
+                {initials}
+              </div>
+            )}
+          </div>
           {!isMobile && (
             <div className="flex-1 text-left min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -78,7 +86,7 @@ const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
             </div>
           )}
           {isMobile && (
-            <span className="text-xs font-medium leading-tight text-gray-600 dark:text-gray-400">
+            <span className="text-[10px] font-medium opacity-70">
               Tài khoản
             </span>
           )}

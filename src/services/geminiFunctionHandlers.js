@@ -461,8 +461,9 @@ export const handleGetTransactionsByDateRange = async (params, userId) => {
       endDate
     );
 
-    // Tối ưu: Chỉ gửi summary và sample (5 transactions đầu) để giảm token
-    const sampleSize = 5;
+    // Tối ưu: Chỉ gửi summary và sample (10 transactions gần nhất) để giảm token
+    // Nhưng phải bao gồm ID để AI có thể sử dụng cho việc xóa
+    const sampleSize = 10;
     const sample = transactions.slice(0, sampleSize);
 
     // Tính tổng thu và chi
@@ -479,13 +480,17 @@ export const handleGetTransactionsByDateRange = async (params, userId) => {
       totalIncome,
       totalExpense,
       balance: totalIncome - totalExpense,
+      // Bao gồm ID để AI có thể dùng cho delete
       sample: sample.map((tx) => ({
+        id: tx.id, // QUAN TRỌNG: Thêm ID để hỗ trợ xóa
         date: tx.date,
         type: tx.type,
         category: tx.category,
         amount: tx.amount,
+        note: tx.note || "",
+        paymentMethod: tx.paymentMethod || "cash",
       })),
-      // Không gửi toàn bộ transactions để tiết kiệm token
+      // Gợi ý: Nếu user muốn xóa, có thể dùng ID từ danh sách này
     };
   } catch (error) {
     console.error("Lỗi khi lấy giao dịch:", error);
@@ -507,27 +512,69 @@ export const handleGetTransactionsByDateRange = async (params, userId) => {
  */
 export const handleGetTotalIncome = async (params, allTransactions) => {
   try {
-    const { startDate, endDate } = params || {};
+    let { startDate, endDate } = params || {};
 
     let filteredTransactions = allTransactions;
 
-    // Filter theo date range nếu có
-    if (startDate && endDate) {
-      filteredTransactions = allTransactions.filter((tx) => {
-        const txDate = tx.date || "";
-        return txDate >= startDate && txDate <= endDate;
+    // Parse date range nếu có
+    if (startDate || endDate) {
+      // Parse "tháng trước" hoặc "tháng này" nếu có
+      const startMonthRange = parseMonthRange(startDate);
+      const endMonthRange = parseMonthRange(endDate);
+
+      if (startMonthRange) {
+        startDate = startMonthRange.startDate;
+        endDate = startMonthRange.endDate;
+      } else if (endMonthRange) {
+        startDate = endMonthRange.startDate;
+        endDate = endMonthRange.endDate;
+      } else {
+        // Parse ngày tương đối hoặc format Việt Nam
+        const parsedStartDate =
+          parseRelativeDate(startDate) ||
+          parseVietnameseDate(startDate, true) ||
+          startDate;
+        const parsedEndDate =
+          parseRelativeDate(endDate) ||
+          parseVietnameseDate(endDate, true) ||
+          endDate;
+
+        if (parsedStartDate) startDate = parsedStartDate;
+        if (parsedEndDate) endDate = parsedEndDate;
+      }
+
+      console.log("[handleGetTotalIncome] Date range parsed:", {
+        startDate,
+        endDate,
       });
+
+      // Filter theo date range
+      if (startDate && endDate) {
+        filteredTransactions = allTransactions.filter((tx) => {
+          const txDate = tx.date || "";
+          return txDate >= startDate && txDate <= endDate;
+        });
+      }
     }
 
+    console.log(
+      "[handleGetTotalIncome] Filtered transactions count:",
+      filteredTransactions.length
+    );
+
     // Tính tổng thu nhập
-    const totalIncome = filteredTransactions
-      .filter((tx) => tx.type === "income")
-      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    const incomeTransactions = filteredTransactions.filter(
+      (tx) => tx.type === "income"
+    );
+    const totalIncome = incomeTransactions.reduce(
+      (sum, tx) => sum + (Number(tx.amount) || 0),
+      0
+    );
 
     return {
       success: true,
       totalIncome,
-      count: filteredTransactions.filter((tx) => tx.type === "income").length,
+      count: incomeTransactions.length,
       period:
         startDate && endDate
           ? `${startDate} đến ${endDate}`
@@ -544,37 +591,71 @@ export const handleGetTotalIncome = async (params, allTransactions) => {
   }
 };
 
-/**
- * Handler cho hàm getTotalExpense
- * Tính tổng chi tiêu từ transactions
- *
- * @param {Object} params - Parameters từ AI (startDate, endDate optional)
- * @param {Array} allTransactions - Tất cả transactions của user
- * @returns {Promise<Object>} Kết quả với tổng chi tiêu
- */
 export const handleGetTotalExpense = async (params, allTransactions) => {
   try {
-    const { startDate, endDate } = params || {};
+    let { startDate, endDate } = params || {};
 
     let filteredTransactions = allTransactions;
 
-    // Filter theo date range nếu có
-    if (startDate && endDate) {
-      filteredTransactions = allTransactions.filter((tx) => {
-        const txDate = tx.date || "";
-        return txDate >= startDate && txDate <= endDate;
+    // Parse date range nếu có
+    if (startDate || endDate) {
+      // Parse "tháng trước" hoặc "tháng này" nếu có
+      const startMonthRange = parseMonthRange(startDate);
+      const endMonthRange = parseMonthRange(endDate);
+
+      if (startMonthRange) {
+        startDate = startMonthRange.startDate;
+        endDate = startMonthRange.endDate;
+      } else if (endMonthRange) {
+        startDate = endMonthRange.startDate;
+        endDate = endMonthRange.endDate;
+      } else {
+        // Parse ngày tương đối hoặc format Việt Nam
+        const parsedStartDate =
+          parseRelativeDate(startDate) ||
+          parseVietnameseDate(startDate, true) ||
+          startDate;
+        const parsedEndDate =
+          parseRelativeDate(endDate) ||
+          parseVietnameseDate(endDate, true) ||
+          endDate;
+
+        if (parsedStartDate) startDate = parsedStartDate;
+        if (parsedEndDate) endDate = parsedEndDate;
+      }
+
+      console.log("[handleGetTotalExpense] Date range parsed:", {
+        startDate,
+        endDate,
       });
+
+      // Filter theo date range
+      if (startDate && endDate) {
+        filteredTransactions = allTransactions.filter((tx) => {
+          const txDate = tx.date || "";
+          return txDate >= startDate && txDate <= endDate;
+        });
+      }
     }
 
+    console.log(
+      "[handleGetTotalExpense] Filtered transactions count:",
+      filteredTransactions.length
+    );
+
     // Tính tổng chi tiêu
-    const totalExpense = filteredTransactions
-      .filter((tx) => tx.type === "expense")
-      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    const expenseTransactions = filteredTransactions.filter(
+      (tx) => tx.type === "expense"
+    );
+    const totalExpense = expenseTransactions.reduce(
+      (sum, tx) => sum + (Number(tx.amount) || 0),
+      0
+    );
 
     return {
       success: true,
       totalExpense,
-      count: filteredTransactions.filter((tx) => tx.type === "expense").length,
+      count: expenseTransactions.length,
       period:
         startDate && endDate
           ? `${startDate} đến ${endDate}`
@@ -601,17 +682,55 @@ export const handleGetTotalExpense = async (params, allTransactions) => {
  */
 export const handleGetBalance = async (params, allTransactions) => {
   try {
-    const { startDate, endDate } = params || {};
+    let { startDate, endDate } = params || {};
 
     let filteredTransactions = allTransactions;
 
-    // Filter theo date range nếu có
-    if (startDate && endDate) {
-      filteredTransactions = allTransactions.filter((tx) => {
-        const txDate = tx.date || "";
-        return txDate >= startDate && txDate <= endDate;
+    // Parse date range nếu có
+    if (startDate || endDate) {
+      // Parse "tháng trước" hoặc "tháng này" nếu có
+      const startMonthRange = parseMonthRange(startDate);
+      const endMonthRange = parseMonthRange(endDate);
+
+      if (startMonthRange) {
+        startDate = startMonthRange.startDate;
+        endDate = startMonthRange.endDate;
+      } else if (endMonthRange) {
+        startDate = endMonthRange.startDate;
+        endDate = endMonthRange.endDate;
+      } else {
+        // Parse ngày tương đối hoặc format Việt Nam
+        const parsedStartDate =
+          parseRelativeDate(startDate) ||
+          parseVietnameseDate(startDate, true) ||
+          startDate;
+        const parsedEndDate =
+          parseRelativeDate(endDate) ||
+          parseVietnameseDate(endDate, true) ||
+          endDate;
+
+        if (parsedStartDate) startDate = parsedStartDate;
+        if (parsedEndDate) endDate = parsedEndDate;
+      }
+
+      console.log("[handleGetBalance] Date range parsed:", {
+        startDate,
+        endDate,
       });
+
+      // Filter theo date range
+      if (startDate && endDate) {
+        filteredTransactions = allTransactions.filter((tx) => {
+          const txDate = tx.date || "";
+          return txDate >= startDate && txDate <= endDate;
+        });
+      }
     }
+
+    console.log(
+      "[handleGetBalance] Filtered transactions count:",
+      filteredTransactions.length
+    );
 
     // Tính tổng thu và tổng chi
     const totalIncome = filteredTransactions

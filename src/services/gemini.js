@@ -60,11 +60,19 @@ QUY TẮC BẮT BUỘC KHI XỬ LÝ YÊU CẦU:
    → Gọi getTransactionsByDateRange.
    → Với "tháng trước", truyền "tháng trước" vào cả startDate và endDate.
    → Với "tháng này", truyền "tháng này" vào cả startDate và endDate.
+   → Kết quả sẽ bao gồm ID của mỗi giao dịch để hỗ trợ việc xóa.
 
-4. NGUYÊN TẮC TRẢ LỜI:
+4. KHI NGƯỜI DÙNG MUỐN XÓA GIAO DỊCH (Input: "xóa...", "hủy giao dịch...", "bỏ..."):
+   → BƯỚC 1: Gọi getTransactionsByDateRange để tìm giao dịch cần xóa (kết quả có ID).
+   → BƯỚC 2: Hiển thị danh sách giao dịch với ID và hỏi user muốn xóa giao dịch nào.
+   → BƯỚC 3: Khi user xác nhận ID, gọi deleteTransaction với transactionId đó.
+   → QUAN TRỌNG: Mỗi giao dịch có ID duy nhất (UID). User có thể xem ID trên trang Tổng Quan bằng cách nhấn vào giao dịch.
+
+5. NGUYÊN TẮC TRẢ LỜI:
    → Luôn thân thiện, vui vẻ. Dùng emoji phù hợp 💰💸📊.
    → Nếu phát hiện chi tiêu quá nhiều (Total Expense > Total Income), hãy cảnh báo nhẹ nhàng.
    → Trả lời ngắn gọn, đi thẳng vào số liệu.
+   → Khi hiển thị danh sách giao dịch, LUÔN hiển thị ID (dạng rút gọn 8 ký tự cuối) để user dễ tham khảo khi cần xóa.
 
 KHÔNG ĐƯỢC TỪ CHỐI YÊU CẦU LIÊN QUAN ĐẾN TÀI CHÍNH CỦA NGƯỜI DÙNG.`;
 }
@@ -543,32 +551,102 @@ export const processUserMessage = async (
         },
       ];
 
-      const finalResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash-lite",
-        contents: functionResponseContents,
-        systemInstruction: systemInstruction, // Dùng system instruction đã có ngày hiện tại
-        config: config,
-      });
+      // Gọi AI để format kết quả - có fallback nếu API bị lỗi
+      let finalText = "";
+      try {
+        const finalResponse = await ai.models.generateContent({
+          model: "gemini-2.5-flash-lite",
+          contents: functionResponseContents,
+          systemInstruction: systemInstruction,
+          config: config,
+        });
 
-      // Lấy text từ final response - response đã là GenerateContentResponse
-      // Có thể dùng finalResponse.text trực tiếp
-      let finalText = finalResponse.text || "";
+        console.log("[Function Calling] finalResponse received:", {
+          hasText: !!finalResponse.text,
+          textPreview: finalResponse.text?.substring(0, 100),
+        });
 
-      // Fallback: parse từ candidates nếu text không có
-      if (
-        !finalText &&
-        finalResponse.candidates &&
-        finalResponse.candidates[0]
-      ) {
-        const candidate = finalResponse.candidates[0];
-        if (candidate.content && candidate.content.parts) {
-          for (const part of candidate.content.parts) {
-            if (part.text) {
-              finalText += part.text;
+        finalText = finalResponse.text || "";
+
+        // Fallback: parse từ candidates nếu text không có
+        if (
+          !finalText &&
+          finalResponse.candidates &&
+          finalResponse.candidates[0]
+        ) {
+          const candidate = finalResponse.candidates[0];
+          if (candidate.content && candidate.content.parts) {
+            for (const part of candidate.content.parts) {
+              if (part.text) {
+                finalText += part.text;
+              }
             }
           }
         }
+      } catch (finalCallError) {
+        // Nếu API lỗi (503, quota, etc), tạo fallback response từ function results
+        console.warn(
+          "[Function Calling] Final AI call failed, using fallback:",
+          finalCallError.message
+        );
+
+        // Tạo text từ kết quả function đã có
+        const fallbackTexts = functionResults.map((fr) => {
+          const result = fr.response;
+          if (result.success) {
+            if (result.message) return result.message;
+            if (result.totalExpense !== undefined)
+              return `Tổng chi tiêu: ${result.totalExpense.toLocaleString(
+                "vi-VN"
+              )} VND (${result.count || 0} giao dịch)`;
+            if (result.totalIncome !== undefined)
+              return `Tổng thu nhập: ${result.totalIncome.toLocaleString(
+                "vi-VN"
+              )} VND`;
+            if (result.balance !== undefined)
+              return `Số dư: ${result.balance.toLocaleString("vi-VN")} VND`;
+            if (result.count !== undefined)
+              return `Tìm thấy ${result.count} giao dịch`;
+          }
+          return result.error || "Không có dữ liệu";
+        });
+
+        finalText =
+          fallbackTexts.join("\n\n") +
+          "\n\n_(AI đang bận, đây là dữ liệu tóm tắt)_";
       }
+
+      // Final fallback: Nếu vẫn không có text, tạo từ function results
+      if (!finalText || finalText.trim() === "") {
+        console.log(
+          "[Function Calling] No text from AI, generating from function results"
+        );
+        const autoTexts = functionResults.map((fr) => {
+          const result = fr.response;
+          if (result.success) {
+            if (result.message) return result.message;
+            if (result.totalExpense !== undefined)
+              return `💸 Tổng chi tiêu: ${result.totalExpense.toLocaleString(
+                "vi-VN"
+              )} VND (${result.count || 0} giao dịch)`;
+            if (result.totalIncome !== undefined)
+              return `💰 Tổng thu nhập: ${result.totalIncome.toLocaleString(
+                "vi-VN"
+              )} VND`;
+            if (result.balance !== undefined)
+              return `📊 Số dư: ${result.balance.toLocaleString("vi-VN")} VND`;
+            if (result.count !== undefined)
+              return `📋 Tìm thấy ${result.count} giao dịch`;
+          }
+          return result.error || "Không có dữ liệu";
+        });
+        finalText = autoTexts.join("\n");
+      }
+
+      console.log(
+        "[Function Calling] Final text to return:",
+        finalText?.substring(0, 200)
+      );
 
       return {
         text: finalText,

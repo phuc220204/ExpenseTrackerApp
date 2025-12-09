@@ -452,6 +452,23 @@ const ShoppingListTab = () => {
 };
 
 // Sub-components
+/**
+ * Format số tiền khi nhập (thêm dấu chấm phân cách)
+ */
+const formatInputAmount = (value) => {
+  const numericValue = String(value).replace(/[^\d]/g, "");
+  if (!numericValue) return "";
+  return Number(numericValue).toLocaleString("vi-VN");
+};
+
+/**
+ * Parse số tiền từ input đã format
+ */
+const parseInputAmount = (value) => {
+  const numericValue = String(value).replace(/[^\d]/g, "");
+  return numericValue || "";
+};
+
 const CreatePlanModal = ({
   isOpen,
   onClose,
@@ -461,34 +478,70 @@ const CreatePlanModal = ({
   setBudget,
   onSubmit,
 }) => (
-  <Modal isOpen={isOpen} onOpenChange={onClose}>
+  <Modal isOpen={isOpen} onOpenChange={onClose} size="md">
     <ModalContent>
       {(onClose) => (
         <>
-          <ModalHeader>Tạo Kế Hoạch Mua Sắm Mới</ModalHeader>
-          <ModalBody>
-            <Input
-              label="Tên kế hoạch"
-              placeholder="VD: Săn sale 12/12"
-              value={name}
-              onValueChange={setName}
-              autoFocus
-            />
-            <Input
-              label="Ngân sách dự kiến"
-              placeholder="2,000,000"
-              type="number"
-              value={budget}
-              onValueChange={setBudget}
-              startContent={<span className="text-slate-400 text-sm">₫</span>}
-            />
+          <ModalHeader className="flex flex-col gap-1 pb-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500 to-orange-400 text-white shadow-lg">
+                <ShoppingBag size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Tạo Kế Hoạch Mua Sắm
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">
+                  Lên danh sách và theo dõi ngân sách chi tiêu
+                </p>
+              </div>
+            </div>
+          </ModalHeader>
+          <ModalBody className="pt-6">
+            <div className="space-y-4">
+              <Input
+                label="Tên kế hoạch"
+                placeholder="VD: Săn sale 12/12, Mua đồ tết..."
+                value={name}
+                onValueChange={setName}
+                autoFocus
+                variant="bordered"
+                size="lg"
+                startContent={
+                  <ShoppingCart className="w-4 h-4 text-gray-400" />
+                }
+              />
+              <Input
+                label="Ngân sách dự kiến"
+                placeholder="2,000,000"
+                value={formatInputAmount(budget)}
+                onValueChange={(val) => setBudget(parseInputAmount(val))}
+                variant="bordered"
+                size="lg"
+                endContent={
+                  <span className="text-xs text-gray-400 font-medium">VND</span>
+                }
+              />
+              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3">
+                <p className="text-xs text-orange-700 dark:text-orange-300">
+                  💡 <strong>Gợi ý:</strong> Đặt ngân sách hợp lý để theo dõi
+                  chi tiêu hiệu quả. Bạn có thể thêm danh sách mua sắm sau khi
+                  tạo kế hoạch.
+                </p>
+              </div>
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>
               Hủy
             </Button>
-            <Button color="primary" onPress={onSubmit}>
-              Tạo ngay
+            <Button
+              color="primary"
+              onPress={onSubmit}
+              isDisabled={!name.trim() || !budget}
+              className="font-semibold"
+            >
+              Tạo kế hoạch
             </Button>
           </ModalFooter>
         </>

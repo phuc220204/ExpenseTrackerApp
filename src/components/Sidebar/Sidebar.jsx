@@ -73,7 +73,7 @@ const Sidebar = () => {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-medium"
+                      ? "bg-primary-500 text-white font-medium shadow-md"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`
                 }
@@ -123,7 +123,7 @@ const Sidebar = () => {
                 className={({ isActive }) =>
                   `flex flex-col items-center justify-center h-full transition-all duration-300 relative group ${
                     isActive
-                      ? "text-primary-600 dark:text-primary-400"
+                      ? "text-primary-600 dark:text-white"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`
                 }
@@ -133,7 +133,7 @@ const Sidebar = () => {
                     <div
                       className={`p-1.5 rounded-xl transition-all duration-300 ${
                         isActive
-                          ? "bg-primary-100 dark:bg-primary-900/40 transform -translate-y-1"
+                          ? "bg-primary-500 text-white transform -translate-y-1 shadow-md"
                           : "group-hover:bg-gray-100 dark:group-hover:bg-gray-800"
                       }`}
                     >
@@ -152,20 +152,15 @@ const Sidebar = () => {
                         ? "Công cụ"
                         : item.label}
                     </span>
-                    {isActive && (
-                      <span className="absolute bottom-1 w-1 h-1 bg-current rounded-full" />
-                    )}
                   </>
                 )}
               </NavLink>
             );
           })}
 
-          {/* Profile Avatar cho Mobile */}
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="p-1.5">
-              <ProfileAvatar onLogoutClick={onOpen} isMobile />
-            </div>
+          {/* Profile Avatar - 5th item */}
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+            <ProfileAvatar onLogoutClick={onOpen} isMobile />
           </div>
         </div>
       </nav>
