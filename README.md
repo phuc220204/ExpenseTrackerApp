@@ -4,7 +4,7 @@
 
 ## 🌐 Demo
 
-👉 **[Dùng thử ngay](https://expensetracker-purchase.vercel.app/)**
+👉 **[Ví Vi Vu](https://vivivu.vercel.app/)**
 
 > Đăng nhập bằng tài khoản Google để trải nghiệm đầy đủ tính năng.
 
