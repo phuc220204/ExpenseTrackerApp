@@ -1,5 +1,5 @@
 import { Button } from "@heroui/react";
-import { Plus, Bot, X, Wallet } from "lucide-react";
+import { Plus, X, Wallet, Sparkles } from "lucide-react";
 import { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +18,7 @@ const FloatingActionButton = ({ onOpenAddTransaction, onOpenChat }) => {
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Nút Chat AI */}
+            {/* Nút Chat AI - Glassmorphism Style */}
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.8 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -26,24 +26,20 @@ const FloatingActionButton = ({ onOpenAddTransaction, onOpenChat }) => {
               transition={{ duration: 0.2, delay: 0.05 }}
               className="flex items-center gap-2"
             >
-              {/* Label cho desktop (optional) */}
-              {/* <span className="bg-white dark:bg-gray-800 px-2 py-1 rounded shadow text-xs">Trợ lý AI</span> */}
-
               <Button
                 isIconOnly
-                color="secondary"
-                className="shadow-lg"
+                className="shadow-lg backdrop-blur-md bg-transparent dark:bg-white/10 text-purple-600 dark:text-purple-400 border-2 border-blue-500 dark:border-white/20 hover:bg-blue-50 dark:hover:bg-white/20"
                 onPress={() => {
                   onOpenChat();
                   setIsOpen(false);
                 }}
                 aria-label="Mở Trợ lý AI"
               >
-                <Bot className="w-5 h-5" />
+                <Sparkles className="w-5 h-5" />
               </Button>
             </motion.div>
 
-            {/* Nút Thêm Giao Dịch */}
+            {/* Nút Thêm Giao Dịch - Explicit Blue Styling */}
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.8 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -53,8 +49,7 @@ const FloatingActionButton = ({ onOpenAddTransaction, onOpenChat }) => {
             >
               <Button
                 isIconOnly
-                color="primary"
-                className="shadow-lg"
+                className="shadow-lg backdrop-blur-md bg-transparent dark:bg-white/10 text-blue-600 dark:text-blue-400 border-2 border-blue-500 dark:border-white/20 hover:bg-blue-50 dark:hover:bg-white/20"
                 onPress={() => {
                   onOpenAddTransaction();
                   setIsOpen(false);
@@ -71,9 +66,8 @@ const FloatingActionButton = ({ onOpenAddTransaction, onOpenChat }) => {
       {/* Main Toggle Button */}
       <Button
         isIconOnly
-        color="primary"
         size="lg"
-        className={`shadow-lg hover:shadow-xl transition-transform duration-300 ${
+        className={`shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-md bg-transparent dark:bg-white/10 text-blue-600 dark:text-blue-400 border-2 border-blue-500 dark:border-white/20 hover:bg-blue-50 dark:hover:bg-white/20 ${
           isOpen ? "rotate-180" : ""
         }`}
         onPress={toggleOpen}
