@@ -625,11 +625,11 @@ const AddNewItemForm = ({ onAdd }) => {
       <Input
         label="Giá dự kiến"
         placeholder="0"
-        type="number"
         size="sm"
         className="w-32"
-        value={price}
-        onValueChange={setPrice}
+        value={formatInputAmount(price)}
+        onValueChange={(val) => setPrice(parseInputAmount(val))}
+        endContent={<span className="text-xs text-gray-400">VND</span>}
       />
       <Button isIconOnly color="primary" type="submit">
         <Plus size={20} />

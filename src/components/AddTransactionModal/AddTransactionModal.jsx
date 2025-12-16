@@ -14,6 +14,7 @@ import { formatAmountInput } from "../../utils/formatCurrency";
 import { useAddTransactionForm } from "./useAddTransactionForm";
 import CategorySelector from "./CategorySelector";
 import BankSelector from "./BankSelector";
+import ImageScanButton from "./ImageScanButton";
 
 /**
  * Component Modal thêm/sửa giao dịch
@@ -69,6 +70,25 @@ const AddTransactionModal = ({
               </h2>
             </ModalHeader>
             <ModalBody className="gap-3 sm:gap-4">
+              {/* Khu vực quét hóa đơn - chỉ hiện khi thêm mới */}
+              {!isEditMode && (
+                <ImageScanButton
+                  onExtracted={(data) => {
+                    // Auto-fill form với dữ liệu từ AI
+                    setFormData((prev) => ({
+                      ...prev,
+                      amount: data.amount
+                        ? formatAmountInput(String(data.amount))
+                        : prev.amount,
+                      date: data.date || prev.date,
+                      note: data.description || prev.note,
+                      category: data.category || prev.category,
+                      type: data.category === "Thu nhập" ? "income" : "expense",
+                    }));
+                  }}
+                />
+              )}
+
               {/* Loại giao dịch */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

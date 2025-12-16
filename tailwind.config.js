@@ -13,41 +13,8 @@ export default {
         heading: ["Poppins", "sans-serif"],
         sans: ["Open Sans", "sans-serif"],
       },
-      colors: {
-        primary: {
-          500: "#2563EB",
-          600: "#1D4ED8",
-        },
-        accent: {
-          500: "#F59E0B",
-          600: "#D97706",
-        },
-      },
     },
   },
   darkMode: "class",
-  plugins: [
-    heroui({
-      themes: {
-        light: {
-          colors: {
-            primary: {
-              DEFAULT: "#2563EB", // Trust Blue
-              foreground: "#FFFFFF",
-            },
-            focus: "#2563EB",
-          },
-        },
-        dark: {
-          colors: {
-            primary: {
-              DEFAULT: "#2563EB", // Same for dark mode or adjust if needed
-              foreground: "#FFFFFF",
-            },
-            focus: "#2563EB",
-          },
-        },
-      },
-    }),
-  ],
+  plugins: [heroui()],
 };

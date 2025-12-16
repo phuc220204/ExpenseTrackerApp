@@ -4,6 +4,8 @@ import { Suspense, lazy } from "react";
 import { Spinner } from "@heroui/react";
 import BudgetTab from "./BudgetTab"; // Use local BudgetTab
 import ShoppingListTab from "./ShoppingListTab";
+import ThemeButton from "../../components/ThemeButton";
+import RefreshButton from "../../components/RefreshButton";
 
 // Lazy load GoalsTab để tối ưu performance
 const GoalsTab = lazy(() => import("../Goals"));
@@ -18,13 +20,19 @@ const GoalsTab = lazy(() => import("../Goals"));
 const Planning = () => {
   return (
     <div className="space-y-6 pb-24 md:pb-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-heading font-bold text-slate-900 dark:text-white tracking-tight">
-          Kế Hoạch Tài Chính
-        </h1>
-        <p className="text-slate-500">
-          Quản lý ngân sách, mục tiêu tiết kiệm và kế hoạch mua sắm
-        </p>
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-heading font-bold text-slate-900 dark:text-white tracking-tight">
+            Kế Hoạch Tài Chính
+          </h1>
+          <p className="text-slate-500">
+            Quản lý ngân sách, mục tiêu tiết kiệm và kế hoạch mua sắm
+          </p>
+        </div>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ThemeButton />
+          <RefreshButton />
+        </div>
       </div>
 
       <div className="flex w-full flex-col">

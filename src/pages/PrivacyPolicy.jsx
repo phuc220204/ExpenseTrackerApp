@@ -1,128 +1,239 @@
-import { Card, CardBody, CardHeader } from "@heroui/react";
-import { Shield, ArrowLeft } from "lucide-react";
+import { Card, CardBody, Button, Chip } from "@heroui/react";
+import {
+  Shield,
+  ArrowLeft,
+  Database,
+  Lock,
+  Eye,
+  UserCheck,
+  Mail,
+  Cloud,
+  Key,
+  AlertCircle,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 /**
- * Trang Chính Sách Bảo Mật
+ * Trang Chính Sách Bảo Mật - Redesigned
  * Public route - không cần đăng nhập
  */
 const PrivacyPolicy = () => {
+  const sections = [
+    {
+      icon: Eye,
+      title: "Thông Tin Thu Thập",
+      color: "from-blue-500 to-cyan-500",
+      items: [
+        { label: "Thông tin Google", desc: "Email, tên, ảnh đại diện" },
+        { label: "Dữ liệu giao dịch", desc: "Các giao dịch bạn nhập" },
+        { label: "Dữ liệu ngân sách", desc: "Kế hoạch chi tiêu" },
+        { label: "API Key", desc: "Lưu cục bộ trên thiết bị" },
+      ],
+    },
+    {
+      icon: Database,
+      title: "Cách Sử Dụng",
+      color: "from-purple-500 to-pink-500",
+      items: [
+        { label: "Xác thực", desc: "Quản lý tài khoản của bạn" },
+        { label: "Lưu trữ", desc: "Hiển thị dữ liệu giao dịch" },
+        { label: "Thống kê", desc: "Tạo báo cáo tài chính" },
+        { label: "AI", desc: "Hỗ trợ nhập liệu thông minh" },
+      ],
+    },
+    {
+      icon: Cloud,
+      title: "Lưu Trữ Dữ Liệu",
+      color: "from-emerald-500 to-teal-500",
+      items: [
+        { label: "Firebase", desc: "Dữ liệu trên Google Cloud" },
+        { label: "LocalStorage", desc: "API Key chỉ lưu trên trình duyệt" },
+      ],
+    },
+    {
+      icon: Lock,
+      title: "Bảo Mật",
+      color: "from-amber-500 to-orange-500",
+      items: [
+        { label: "HTTPS", desc: "Kết nối được mã hóa" },
+        { label: "Firebase Rules", desc: "Kiểm soát truy cập dữ liệu" },
+        { label: "OAuth 2.0", desc: "Xác thực qua Google" },
+      ],
+    },
+    {
+      icon: UserCheck,
+      title: "Quyền Của Bạn",
+      color: "from-rose-500 to-red-500",
+      items: [
+        { label: "Truy cập", desc: "Xem dữ liệu của mình" },
+        { label: "Chỉnh sửa", desc: "Sửa hoặc xóa giao dịch" },
+        { label: "Xuất dữ liệu", desc: "CSV, Excel, PDF" },
+        { label: "Xóa tài khoản", desc: "Xóa toàn bộ dữ liệu" },
+      ],
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white">
+        <div className="max-w-4xl mx-auto px-6 py-12">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-primary-500 hover:text-primary-600 mb-4"
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Về trang chủ
           </Link>
-          <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8 text-primary-500" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Chính Sách Bảo Mật
-            </h1>
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
+              <Shield className="w-10 h-10" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                Chính Sách Bảo Mật
+              </h1>
+              <div className="flex items-center gap-3">
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  className="bg-white/20 text-white"
+                >
+                  Ví Vi Vu
+                </Chip>
+                <span className="text-white/70 text-sm">
+                  Cập nhật: {new Date().toLocaleDateString("vi-VN")}
+                </span>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Cập nhật lần cuối: {new Date().toLocaleDateString("vi-VN")}
-          </p>
         </div>
+      </div>
 
-        <Card className="bg-white dark:bg-gray-900">
-          <CardBody className="prose dark:prose-invert max-w-none p-6">
-            <h2>1. Giới Thiệu</h2>
-            <p>
-              Chào mừng bạn đến với <strong>Sổ Thu Chi AI</strong>. Chúng tôi
-              cam kết bảo vệ quyền riêng tư của bạn. Chính sách này giải thích
-              cách chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân của
-              bạn.
-            </p>
-
-            <h2>2. Thông Tin Thu Thập</h2>
-            <p>Chúng tôi thu thập các thông tin sau:</p>
-            <ul>
-              <li>
-                <strong>Thông tin tài khoản Google:</strong> Email, tên hiển
-                thị, ảnh đại diện (khi bạn đăng nhập bằng Google)
-              </li>
-              <li>
-                <strong>Dữ liệu giao dịch:</strong> Các giao dịch thu chi bạn
-                nhập vào ứng dụng
-              </li>
-              <li>
-                <strong>Dữ liệu ngân sách:</strong> Thông tin ngân sách và kế
-                hoạch chi tiêu
-              </li>
-              <li>
-                <strong>API Key Gemini:</strong> Khóa API do bạn tự nhập (lưu
-                trữ cục bộ trên thiết bị)
-              </li>
-            </ul>
-
-            <h2>3. Cách Sử Dụng Thông Tin</h2>
-            <p>Thông tin của bạn được sử dụng để:</p>
-            <ul>
-              <li>Xác thực và quản lý tài khoản của bạn</li>
-              <li>Lưu trữ và hiển thị dữ liệu giao dịch</li>
-              <li>Tạo báo cáo và thống kê tài chính cá nhân</li>
-              <li>Cung cấp tính năng trợ lý AI (nếu bạn cung cấp API key)</li>
-            </ul>
-
-            <h2>4. Lưu Trữ Dữ Liệu</h2>
-            <ul>
-              <li>
-                <strong>Cloud Firestore:</strong> Dữ liệu giao dịch được lưu
-                trên Firebase (Google Cloud)
-              </li>
-              <li>
-                <strong>LocalStorage:</strong> API Key Gemini chỉ lưu trên trình
-                duyệt của bạn, không gửi lên server
-              </li>
-            </ul>
-
-            <h2>5. Chia Sẻ Thông Tin</h2>
-            <p>
-              Chúng tôi <strong>KHÔNG</strong> bán, cho thuê hoặc chia sẻ thông
-              tin cá nhân của bạn với bên thứ ba, ngoại trừ:
-            </p>
-            <ul>
-              <li>Google (cung cấp dịch vụ xác thực và lưu trữ)</li>
-              <li>Khi có yêu cầu pháp lý từ cơ quan có thẩm quyền</li>
-            </ul>
-
-            <h2>6. Bảo Mật</h2>
-            <p>
-              Chúng tôi sử dụng các biện pháp bảo mật tiêu chuẩn ngành bao gồm:
-            </p>
-            <ul>
-              <li>Kết nối HTTPS được mã hóa</li>
-              <li>Firebase Security Rules để kiểm soát truy cập dữ liệu</li>
-              <li>Xác thực OAuth 2.0 qua Google</li>
-            </ul>
-
-            <h2>7. Quyền Của Bạn</h2>
-            <p>Bạn có quyền:</p>
-            <ul>
-              <li>Truy cập và xem dữ liệu của mình</li>
-              <li>Chỉnh sửa hoặc xóa dữ liệu giao dịch</li>
-              <li>Xuất dữ liệu (CSV, Excel, PDF)</li>
-              <li>Xóa tài khoản và toàn bộ dữ liệu</li>
-            </ul>
-
-            <h2>8. Liên Hệ</h2>
-            <p>
-              Nếu có câu hỏi về chính sách bảo mật, vui lòng liên hệ qua email:
-              <a
-                href="mailto:phuc220204@gmail.com"
-                className="text-primary-500"
-              >
-                phuc220204@gmail.com
-              </a>
-            </p>
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        {/* Intro Card */}
+        <Card className="mb-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-none shadow-xl">
+          <CardBody className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Cam Kết Của Chúng Tôi
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Chào mừng bạn đến với{" "}
+                  <strong>Ví Vi Vu - Sổ Thu Chi AI</strong>. Chúng tôi cam kết
+                  bảo vệ quyền riêng tư của bạn. Chính sách này giải thích cách
+                  chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân của
+                  bạn.
+                </p>
+              </div>
+            </div>
           </CardBody>
         </Card>
+
+        {/* Sections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {sections.map((section, idx) => (
+            <Card
+              key={idx}
+              className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-none shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <CardBody className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className={`p-2.5 rounded-xl bg-gradient-to-br ${section.color} text-white`}
+                  >
+                    <section.icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    {section.title}
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  {section.items.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 mt-2" />
+                      <div>
+                        <span className="font-medium text-gray-900 dark:text-white text-sm">
+                          {item.label}
+                        </span>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+
+        {/* No Sharing Notice */}
+        <Card className="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white border-none shadow-lg">
+          <CardBody className="p-6">
+            <div className="flex items-center gap-4">
+              <Key className="w-8 h-8 opacity-80" />
+              <div>
+                <h3 className="font-semibold text-lg mb-1">
+                  Không Chia Sẻ Dữ Liệu
+                </h3>
+                <p className="text-white/90 text-sm">
+                  Chúng tôi <strong>KHÔNG</strong> bán, cho thuê hoặc chia sẻ
+                  thông tin cá nhân của bạn với bên thứ ba (ngoại trừ Google cho
+                  dịch vụ xác thực).
+                </p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Contact */}
+        <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-none shadow-lg">
+          <CardBody className="p-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/30">
+                  <Mail className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Liên Hệ
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Có câu hỏi? Liên hệ với chúng tôi
+                  </p>
+                </div>
+              </div>
+              <Button
+                as="a"
+                href="mailto:phuc220204@gmail.com"
+                color="primary"
+                variant="flat"
+                startContent={<Mail className="w-4 h-4" />}
+              >
+                phuc220204@gmail.com
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Footer Links */}
+        <div className="mt-8 text-center">
+          <Link
+            to="/terms-of-service"
+            className="text-primary-500 hover:text-primary-600 text-sm"
+          >
+            Xem Điều Khoản Dịch Vụ →
+          </Link>
+        </div>
       </div>
     </div>
   );

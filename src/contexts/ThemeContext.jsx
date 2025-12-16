@@ -9,13 +9,16 @@ export const ThemeProvider = ({ children }) => {
   });
 
   // Effect để áp dụng theme vào DOM và lưu vào localStorage
+  // Cần set cả class "dark" cho Tailwind và class "light/dark" cho HeroUI
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+
+    // Remove both theme classes first
+    root.classList.remove("light", "dark");
+
+    // Add appropriate class based on current theme
+    root.classList.add(theme);
+
     localStorage.setItem("theme", theme);
   }, [theme]);
 
