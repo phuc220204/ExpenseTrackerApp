@@ -1,6 +1,17 @@
 import { useState, useMemo } from "react";
-import { Button, useDisclosure, Progress, Card, CardBody } from "@heroui/react";
-import { Plus, Wallet } from "lucide-react";
+import {
+  Button,
+  useDisclosure,
+  Progress,
+  Card,
+  CardBody,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/react";
+import { Plus, Wallet, AlertTriangle } from "lucide-react";
 import { useTransactionsContext } from "../../contexts/TransactionsContext";
 import { useBudgetContext } from "../../contexts/BudgetContext";
 import BudgetCard from "../../components/Budget/BudgetCard";
@@ -16,6 +27,15 @@ const BudgetTab = () => {
   const { budgets, isLoading, deleteBudget } = useBudgetContext();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [editingBudget, setEditingBudget] = useState(null);
+
+  // State cho modal xác nhận xóa
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onOpenChange: onDeleteOpenChange,
+  } = useDisclosure();
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /**
    * Tính toán tổng chi tiêu theo category trong tháng hiện tại
@@ -69,13 +89,24 @@ const BudgetTab = () => {
     onOpen();
   };
 
+  // Mở modal xác nhận xóa
   const handleDelete = (budget) => {
-    if (
-      window.confirm(
-        `Bạn có chắc muốn xóa ngân sách cho mục "${budget.category}"?`
-      )
-    ) {
-      deleteBudget(budget.id);
+    setBudgetToDelete(budget);
+    onDeleteOpen();
+  };
+
+  // Xác nhận xóa
+  const confirmDelete = async () => {
+    if (!budgetToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteBudget(budgetToDelete.id);
+      onDeleteOpenChange(false);
+      setBudgetToDelete(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -177,6 +208,43 @@ const BudgetTab = () => {
         onClose={() => onOpenChange(false)}
         editingBudget={editingBudget}
       />
+
+      {/* Modal xác nhận xóa */}
+      <Modal isOpen={isDeleteOpen} onOpenChange={onDeleteOpenChange} size="sm">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 text-danger">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span>Xác nhận xóa</span>
+                </div>
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Bạn có chắc muốn xóa ngân sách cho mục{" "}
+                  <strong>"{budgetToDelete?.category}"</strong>?
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose}>
+                  Hủy
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={confirmDelete}
+                  isLoading={isDeleting}
+                >
+                  Xóa ngân sách
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

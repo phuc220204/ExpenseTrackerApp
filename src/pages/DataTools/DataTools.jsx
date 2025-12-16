@@ -14,6 +14,8 @@ import { Database, Upload, Table2, Download, Settings } from "lucide-react";
 import { useDataTools } from "./useDataTools";
 import { PasteExcelTab, DirectInputTab, ExportTab } from "./tabs";
 import CategoryManager from "../../components/CategoryManager/CategoryManager";
+import ThemeButton from "../../components/ThemeButton";
+import RefreshButton from "../../components/RefreshButton";
 
 /**
  * DataTools - Trang chính Công cụ Dữ liệu
@@ -58,17 +60,23 @@ function DataTools() {
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden pb-24 md:pb-6">
       {/* Header */}
       <div className="mb-4 sm:mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-            <Database className="w-6 h-6" />
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+              <Database className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                Công Cụ Dữ Liệu
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Nhập/Xuất dữ liệu • Excel • Google Sheets
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              Công Cụ Dữ Liệu
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Nhập/Xuất dữ liệu • Excel • Google Sheets
-            </p>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <ThemeButton />
+            <RefreshButton />
           </div>
         </div>
 

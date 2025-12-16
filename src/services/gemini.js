@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 /**
  * System instruction cho AI Assistant - Tối ưu để giảm token
@@ -775,6 +775,135 @@ QUAN TRỌNG:
     return response.text;
   } catch (error) {
     console.error("Lỗi khi xử lý phản hồi query:", error);
+    throw error;
+  }
+};
+
+// =============================================================================
+// IMAGE RECEIPT SCANNER - Trích xuất dữ liệu từ hình ảnh hóa đơn
+// =============================================================================
+
+/**
+ * Schema định nghĩa cấu trúc dữ liệu trả về từ ảnh hóa đơn
+ * Sử dụng structured output để đảm bảo format JSON chính xác
+ */
+const receiptSchema = {
+  type: Type.OBJECT,
+  properties: {
+    amount: {
+      type: Type.NUMBER,
+      description:
+        "Tổng số tiền giao dịch (chỉ số, không có ký hiệu tiền tệ như đ, VND, $). Với tiền Việt, dấu chấm phân cách hàng nghìn phải được loại bỏ.",
+    },
+    date: {
+      type: Type.STRING,
+      description:
+        "Ngày giao dịch theo định dạng YYYY-MM-DD. Nếu không tìm thấy ngày trong ảnh, để trống.",
+    },
+    description: {
+      type: Type.STRING,
+      description:
+        "Tên người thụ hưởng, tên cửa hàng (Merchant), hoặc nội dung chuyển khoản. Ví dụ: 'Highlands Coffee', 'Nguyen Van A', 'Chuyen tien an trua'.",
+    },
+    category: {
+      type: Type.STRING,
+      description:
+        "Danh mục chi tiêu phù hợp nhất dựa vào nội dung và tên người nhận",
+      enum: [
+        "Ăn uống",
+        "Di chuyển",
+        "Mua sắm",
+        "Hóa đơn",
+        "Giải trí",
+        "Y tế",
+        "Thu nhập",
+        "Khác",
+      ],
+    },
+  },
+  required: ["amount", "description", "category"],
+};
+
+/**
+ * Chuyển đổi File object sang Base64 string
+ * @param {File} file - File object từ input type="file"
+ * @returns {Promise<{base64: string, mimeType: string}>} Object chứa base64 data và mimeType
+ */
+export const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      // reader.result có dạng "data:image/jpeg;base64,/9j/4AAQ..."
+      // Ta cần tách lấy phần base64 sau dấu phẩy
+      const result = reader.result;
+      const base64 = result.split(",")[1];
+      resolve({
+        base64,
+        mimeType: file.type,
+      });
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Trích xuất dữ liệu từ hình ảnh hóa đơn/ảnh chụp giao dịch ngân hàng
+ * Sử dụng Gemini Vision API với structured output
+ *
+ * @param {string} imageBase64 - Dữ liệu ảnh dạng Base64 (không bao gồm prefix data:image/...)
+ * @param {string} mimeType - Loại file (image/jpeg, image/png, image/webp)
+ * @param {string} apiKey - Gemini API Key
+ * @returns {Promise<Object>} Object chứa: amount, date, description, category
+ */
+export const extractReceiptData = async (imageBase64, mimeType, apiKey) => {
+  if (!apiKey) {
+    throw new Error("API Key chưa được cấu hình");
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash", // Best for Vision + Structured Output
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType,
+              data: imageBase64,
+            },
+          },
+          {
+            text: `Bạn là một trợ lý tài chính AI chuyên nghiệp. Hãy phân tích hình ảnh hóa đơn hoặc ảnh chụp màn hình giao dịch ngân hàng này.
+
+Trích xuất các thông tin sau:
+1. amount: Tổng số tiền thanh toán (chỉ số, không có ký hiệu tiền tệ)
+2. date: Ngày giao dịch (định dạng YYYY-MM-DD)
+3. description: Tên người thụ hưởng, cửa hàng, hoặc nội dung chuyển khoản
+4. category: Danh mục chi tiêu phù hợp nhất
+
+Lưu ý:
+- Với tiền Việt, dấu chấm (.) phân cách hàng nghìn phải được loại bỏ
+- Nếu thấy Grab, Be -> Di chuyển
+- Nếu thấy Coffee, Phở, cơm -> Ăn uống
+- Nếu thấy Shopee, Lazada -> Mua sắm`,
+          },
+        ],
+      },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: receiptSchema,
+      },
+    });
+
+    const jsonString = response.text;
+    if (jsonString) {
+      return JSON.parse(jsonString);
+    }
+    return null;
+  } catch (error) {
+    console.error("Lỗi khi trích xuất dữ liệu từ ảnh:", error);
     throw error;
   }
 };
