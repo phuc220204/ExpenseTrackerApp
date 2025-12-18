@@ -23,7 +23,7 @@ import { useAuth } from "../contexts/AuthContext";
  * Path: users/{userId}/transactions
  */
 const useTransactions = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,6 +36,8 @@ const useTransactions = () => {
 
   // Load ledgers settings
   useEffect(() => {
+    // Chờ auth loading hoàn tất trước
+    if (authLoading) return;
     if (!currentUser) return;
 
     const fetchLedgers = async () => {
@@ -80,7 +82,7 @@ const useTransactions = () => {
     };
 
     fetchLedgers();
-  }, [currentUser]);
+  }, [currentUser, authLoading]);
 
   /**
    * Effect để lắng nghe dữ liệu transactions từ Firestore real-time
