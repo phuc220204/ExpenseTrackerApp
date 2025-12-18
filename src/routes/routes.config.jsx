@@ -12,6 +12,7 @@ const Planning = lazy(() => import("../pages/Planning/Planning"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("../pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("../pages/TermsOfService"));
+const Profile = lazy(() => import("../pages/Profile/Profile"));
 
 /**
  * Cấu hình routes của ứng dụng
@@ -71,6 +72,12 @@ export const routesConfig = {
       element: DataTools,
       title: "Công cụ dữ liệu",
       description: "Import/Export dữ liệu",
+    },
+    {
+      path: "profile",
+      element: Profile,
+      title: "Hồ sơ",
+      description: "Quản lý tài khoản",
     },
   ],
 

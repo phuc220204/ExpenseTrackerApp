@@ -9,7 +9,7 @@ import {
   DropdownItem,
   DropdownSection,
 } from "@heroui/react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Component ProfileAvatar - Hiển thị avatar người dùng với dropdown menu
@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
   const { currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Lấy tên hiển thị từ user (email hoặc displayName)
   const displayName =
@@ -98,6 +99,15 @@ const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
           if (key === "logout") {
             onLogoutClick();
             setIsOpen(false);
+          } else if (key === "profile") {
+            navigate("/profile");
+            setIsOpen(false);
+          } else if (key === "privacy") {
+            navigate("/privacy-policy");
+            setIsOpen(false);
+          } else if (key === "terms") {
+            navigate("/terms-of-service");
+            setIsOpen(false);
           }
         }}
       >
@@ -105,19 +115,17 @@ const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
           <DropdownItem
             key="profile"
             startContent={<User className="w-4 h-4" />}
-            textValue="Thông tin tài khoản"
+            textValue="Thông tin & Cài đặt"
           >
             <div className="flex flex-col">
               <span className="text-sm font-medium">{displayName}</span>
-              <span className="text-xs text-gray-500">{email}</span>
+              <span className="text-xs text-gray-500">Thông tin & Cài đặt</span>
             </div>
           </DropdownItem>
         </DropdownSection>
         <DropdownSection title="Pháp lý" showDivider>
           <DropdownItem
             key="privacy"
-            as={Link}
-            to="/privacy-policy"
             startContent={<Shield className="w-4 h-4" />}
             textValue="Chính sách bảo mật"
           >
@@ -125,8 +133,6 @@ const ProfileAvatar = ({ onLogoutClick, isMobile = false }) => {
           </DropdownItem>
           <DropdownItem
             key="terms"
-            as={Link}
-            to="/terms-of-service"
             startContent={<FileText className="w-4 h-4" />}
             textValue="Điều khoản dịch vụ"
           >

@@ -76,12 +76,18 @@ const CalendarView = ({ transactions = [], onDayClick }) => {
     setSelectedDate(new Date());
   };
 
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      notation: "compact",
-    }).format(value);
+  const formatCurrency = (value) => {
+    if (value >= 1000000000) {
+      return (value / 1000000000).toFixed(1).replace(/\.0$/, "") + " tỷ";
+    }
+    if (value >= 1000000) {
+      return (value / 1000000).toFixed(1).replace(/\.0$/, "") + " tr";
+    }
+    if (value >= 1000) {
+      return (value / 1000).toFixed(0) + "k";
+    }
+    return value.toLocaleString("vi-VN");
+  };
 
   const weekDays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 

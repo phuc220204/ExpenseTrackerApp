@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import {
   Modal,
@@ -45,7 +45,10 @@ const Sidebar = () => {
         {/* Logo */}
         <div className="flex flex-col w-full border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-start h-16 w-full px-4">
-            <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <img
                 src="/logoApp.png"
                 alt="Logo App"
@@ -54,7 +57,7 @@ const Sidebar = () => {
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 {APP_NAME}
               </h1>
-            </div>
+            </Link>
           </div>
           <div className="px-4 pb-3">
             <LedgerSwitcher />
@@ -94,7 +97,10 @@ const Sidebar = () => {
 
       {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50 px-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link
+          to="/"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <img
             src="/logoApp.png"
             alt="Logo"
@@ -103,7 +109,7 @@ const Sidebar = () => {
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">
             {APP_NAME}
           </h1>
-        </div>
+        </Link>
         <div className="w-36">
           <LedgerSwitcher />
         </div>
