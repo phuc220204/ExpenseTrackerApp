@@ -31,12 +31,17 @@ export const useCategoryContext = () => {
 };
 
 export const CategoryProvider = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch categories khi user đăng nhập
   useEffect(() => {
+    // Chờ auth loading hoàn tất trước
+    if (authLoading) {
+      return;
+    }
+
     if (!currentUser) {
       setCategories(DEFAULT_CATEGORIES);
       setIsLoading(false);
@@ -57,7 +62,7 @@ export const CategoryProvider = ({ children }) => {
     };
 
     fetchCategories();
-  }, [currentUser]);
+  }, [currentUser, authLoading]);
 
   // Actions
   const addCategory = useCallback(

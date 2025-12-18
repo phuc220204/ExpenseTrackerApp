@@ -31,9 +31,9 @@ const ImageScanButton = ({ onExtracted, disabled = false }) => {
     setIsLoading(true);
 
     try {
-      // Kiểm tra API Key
-      if (!hasKey) {
-        throw new Error("Vui lòng cấu hình Gemini API Key trong Cài đặt");
+      // Kiểm tra API Key trước khi gọi API
+      if (!hasKey || !apiKey) {
+        throw new Error("API_KEY_REQUIRED");
       }
 
       // Kiểm tra file type
@@ -55,7 +55,20 @@ const ImageScanButton = ({ onExtracted, disabled = false }) => {
       }
     } catch (err) {
       console.error("Lỗi khi quét ảnh:", err);
-      setError(err.message || "Có lỗi xảy ra khi xử lý ảnh");
+
+      // Xử lý các loại lỗi cụ thể
+      if (
+        err.message === "API_KEY_REQUIRED" ||
+        err.message?.includes("API Key not found")
+      ) {
+        setError("API_KEY_REQUIRED");
+      } else if (err.message?.includes("API_KEY_INVALID")) {
+        setError(
+          "API Key không hợp lệ. Vui lòng kiểm tra lại trong Trợ lý AI."
+        );
+      } else {
+        setError(err.message || "Có lỗi xảy ra khi xử lý ảnh");
+      }
     } finally {
       setIsLoading(false);
       // Reset input để có thể chọn lại cùng file
@@ -69,10 +82,11 @@ const ImageScanButton = ({ onExtracted, disabled = false }) => {
    * Mở dialog chọn file khi click nút
    */
   const handleClick = () => {
-    if (!hasKey) {
-      setError("Vui lòng cấu hình Gemini API Key trong Cài đặt AI");
+    if (!hasKey || !apiKey) {
+      setError("API_KEY_REQUIRED");
       return;
     }
+    setError("");
     fileInputRef.current?.click();
   };
 
@@ -138,9 +152,22 @@ const ImageScanButton = ({ onExtracted, disabled = false }) => {
 
       {/* Hiển thị lỗi */}
       {error && (
-        <div className="flex items-center justify-center gap-1.5 text-xs text-danger bg-danger/10 py-2 px-3 rounded-lg">
-          <AlertCircle size={14} />
-          <span>{error}</span>
+        <div className="flex flex-col items-center gap-2 text-xs text-danger bg-danger/10 py-3 px-3 rounded-lg">
+          <div className="flex items-center gap-1.5">
+            <AlertCircle size={14} />
+            {error === "API_KEY_REQUIRED" ? (
+              <span>Chưa có API Key. Vui lòng cấu hình trong Trợ lý AI.</span>
+            ) : (
+              <span>{error}</span>
+            )}
+          </div>
+          {error === "API_KEY_REQUIRED" && (
+            <span className="text-gray-600 dark:text-gray-400 text-center">
+              Nhấn nút{" "}
+              <strong className="text-primary-500">✨ Trợ lý AI</strong> ở thanh
+              điều hướng bên dưới để thêm API Key
+            </span>
+          )}
         </div>
       )}
     </div>

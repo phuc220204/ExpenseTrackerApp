@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Ẩn icon mắt mặc định của trình duyệt (Edge/Chrome) cho input password */
+input::-ms-reveal,
+input::-ms-clear,
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* Hide Edge/Chrome password reveal button */
+input[type="password"]::-webkit-reveal,
+input[type="password"]::-ms-reveal {
+  display: none !important;
+}
+
+/* Ẩn focus ring/outline mặc định của trình duyệt bên trong HeroUI Input */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Đảm bảo input bên trong HeroUI không có border riêng */
+[data-slot="input-wrapper"] input,
+[data-slot="inner-wrapper"] input {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

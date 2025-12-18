@@ -1,5 +1,11 @@
 import { Tabs, Tab } from "@heroui/react";
-import { PiggyBank, ClipboardList, Target } from "lucide-react";
+import {
+  PiggyBank,
+  ClipboardList,
+  Target,
+  HandCoins,
+  Trophy,
+} from "lucide-react";
 import { Suspense, lazy } from "react";
 import { Spinner } from "@heroui/react";
 import BudgetTab from "./BudgetTab"; // Use local BudgetTab
@@ -7,15 +13,19 @@ import ShoppingListTab from "./ShoppingListTab";
 import ThemeButton from "../../components/ThemeButton";
 import RefreshButton from "../../components/RefreshButton";
 
-// Lazy load GoalsTab để tối ưu performance
+// Lazy load các tab để tối ưu performance
 const GoalsTab = lazy(() => import("../Goals"));
+const DebtsTab = lazy(() => import("./DebtsTab"));
+const ChallengesTab = lazy(() => import("./ChallengesTab"));
 
 /**
  * Trang Kế Hoạch Tổng Hợp
- * Chứa 3 tab:
+ * Chứa 5 tab:
  * 1. Ngân Sách (Quản lý limit hàng tháng)
- * 2. Sổ Tay Mua Sắm (Lên plan mua sắm cụ thể)
- * 3. Mục tiêu tiết kiệm (Savings Goals)
+ * 2. Tiết Kiệm (Savings Goals)
+ * 3. Món Nợ (Debts tracking)
+ * 4. Thử Thách (Savings Challenges)
+ * 5. Mua Sắm (Shopping List)
  */
 const Planning = () => {
   return (
@@ -74,6 +84,36 @@ const Planning = () => {
             <div className="pt-4">
               <Suspense fallback={<Spinner size="lg" label="Đang tải..." />}>
                 <GoalsTab />
+              </Suspense>
+            </div>
+          </Tab>
+          <Tab
+            key="debts"
+            title={
+              <div className="flex items-center space-x-2">
+                <HandCoins size={20} />
+                <span>Món Nợ</span>
+              </div>
+            }
+          >
+            <div className="pt-4">
+              <Suspense fallback={<Spinner size="lg" label="Đang tải..." />}>
+                <DebtsTab />
+              </Suspense>
+            </div>
+          </Tab>
+          <Tab
+            key="challenges"
+            title={
+              <div className="flex items-center space-x-2">
+                <Trophy size={20} />
+                <span>Thử Thách</span>
+              </div>
+            }
+          >
+            <div className="pt-4">
+              <Suspense fallback={<Spinner size="lg" label="Đang tải..." />}>
+                <ChallengesTab />
               </Suspense>
             </div>
           </Tab>
