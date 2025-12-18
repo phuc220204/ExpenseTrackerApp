@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
 import { auth } from "../services/firebase";
 
 /**
@@ -72,10 +72,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Cập nhật thông tin profile của user (displayName, photoURL)
+   * @param {Object} data - Dữ liệu cần cập nhật { displayName, photoURL }
+   */
+  const updateUserProfile = async (data) => {
+    if (!auth.currentUser) return;
+    try {
+      await updateProfile(auth.currentUser, data);
+      // Force update user state logic if needed, but onAuthStateChanged might handle it
+      // or we manually update local state to reflect changes immediately
+      setCurrentUser({ ...auth.currentUser, ...data });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật profile:", error);
+      throw error;
+    }
+  };
+
   const value = {
     currentUser,
     loading,
     logout,
+    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
