@@ -28,6 +28,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Force SW to activate immediately on new deployment
+        skipWaiting: true,
+        clientsClaim: true,
         // Cache tất cả assets
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         // Runtime caching cho API calls
